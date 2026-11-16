@@ -62,7 +62,7 @@ public sealed class DirectLibraries : IDisposable
 
             using var response = await DownloadAsync(uri, token);
             var length = response.Content.Headers.ContentLength;
-            if (length is > DirectGames.MaxPackageBytes) throw new InvalidDataException("Пакет превышает 512 МБ.");
+            if (length is > DirectGames.MaxPackageBytes) throw new InvalidDataException("Пакет превышает 512MB.");
             if (response.Content.Headers.ContentType?.MediaType?.Contains("html", StringComparison.OrdinalIgnoreCase) == true)
                 throw new InvalidDataException("Хранилище не отдало файл. Скачайте пакет вручную и выберите «Файл с вопросами».");
 

@@ -17,7 +17,7 @@ public sealed class DirectAvatars : IDisposable
 
     public async Task<string> UploadAsync(IFormFile file, CancellationToken cancellationToken)
     {
-        if (file.Length is <= 0 or > MaxBytes) throw new InvalidDataException("Выберите картинку или видео размером до 15 МБ.");
+        if (file.Length is <= 0 or > MaxBytes) throw new InvalidDataException("Выберите картинку или видео размером до 15MB.");
         await using var input = file.OpenReadStream();
         var temporary = Path.Combine(_root, Guid.NewGuid().ToString("N"));
         try
@@ -32,7 +32,7 @@ public sealed class DirectAvatars : IDisposable
                 while ((read = await input.ReadAsync(buffer, cancellationToken)) > 0)
                 {
                     length += read;
-                    if (length > MaxBytes) throw new InvalidDataException("Аватарка больше 15 МБ.");
+                    if (length > MaxBytes) throw new InvalidDataException("Аватарка больше 15MB.");
                     await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                 }
                 output.Position = 0;

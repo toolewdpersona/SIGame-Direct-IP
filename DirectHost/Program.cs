@@ -165,7 +165,7 @@ app.MapPost("/direct/packages", async (HttpContext context, DirectGames games) =
         var form = await context.Request.ReadFormAsync(context.RequestAborted);
         var file = form.Files.GetFile("file");
         if (file == null || form.Files.Count != 1 || file.Length is <= 0 or > DirectGames.MaxPackageBytes)
-            return Results.BadRequest(new { error = "Выберите пакет .siq размером до 512 МБ." });
+            return Results.BadRequest(new { error = "Выберите пакет .siq размером до 512MB." });
         var descriptor = await games.UploadAsync(file, context.RequestAborted);
         return Results.Ok(descriptor);
     }

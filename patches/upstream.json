@@ -31,8 +31,8 @@
       "repository": "https://github.com/VladimirKhil/SIOnline.git",
       "commit": "dc37610fd5e44e8267d3386a8b6c6d7d0fa95b52",
       "patch": "SIOnline.patch",
-      "sha256": "956feda87554705d5e4b941f10b712b4d987b1f5dc7ba31bf0d17421815ee141",
-      "patchedTree": "42a42c0033fd3ef14ca375563bcbcffac7cc0e87",
+      "sha256": "e774d0584f82cdc3402e4381adbfaeda2c25065dcb0ad74cc5815b2b1535f402",
+      "patchedTree": "943e284ed9645af05d55293caf6c4d7017e9f443",
       "sparsePaths": [
         "/*",
         "!/assets/fonts/FuturaC.eot",

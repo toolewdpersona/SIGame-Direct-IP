@@ -29,7 +29,7 @@ internal static class DirectSecurity
             total = checked(total + entry.Length);
             if (total > 2L * 1024 * 1024 * 1024) throw new InvalidDataException("Распакованный пакет больше 2 ГБ.");
             if (name is not ("content.xml" or "Texts/authors.xml" or "Texts/sources.xml")) continue;
-            if (entry.Length > 16 * 1024 * 1024) throw new InvalidDataException("Описание пакета больше 16 МБ.");
+            if (entry.Length > 16 * 1024 * 1024) throw new InvalidDataException("Описание пакета больше 16MB.");
             using var input = entry.Open();
             using var reader = XmlReader.Create(input, new XmlReaderSettings
             {

@@ -1219,7 +1219,7 @@ index 4b78becbf5ecf99efd1f5f832579ae9f810b7072..24a931e48c9581223876f1de47f87474
 \ No newline at end of file
 +export default connect(mapStateToProps)(TableWelcome);
 diff --git a/src/components/panels/AvatarView/AvatarView.tsx b/src/components/panels/AvatarView/AvatarView.tsx
-index 2c1ece629a5a5e4b1d82249ab39387365fe3f4b9..7fee438b91a140a35568ae368e046db2ad9c098c 100644
+index 2c1ece629a5a5e4b1d82249ab39387365fe3f4b9..f072fe0dd0ecf0f190140cc925c96d69fef6d06b 100644
 --- a/src/components/panels/AvatarView/AvatarView.tsx
 +++ b/src/components/panels/AvatarView/AvatarView.tsx
 @@ -11,6 +11,8 @@ import { useAppDispatch, useAppSelector } from '../../../state/hooks';
@@ -1307,7 +1307,7 @@ index 2c1ece629a5a5e4b1d82249ab39387365fe3f4b9..7fee438b91a140a35568ae368e046db2
  				disabled={props.avatarLoadProgress}
  				onChange={onAvatarChanged}
  			/>
-+			{direct && <small>PNG, JPEG, GIF, MP4, WebM — до 15 МБ</small>}
++			{direct && <small>PNG, JPEG, GIF, MP4, WebM — до 15MB</small>}
  		</>
  	);
  }
