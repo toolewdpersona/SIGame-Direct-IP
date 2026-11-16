@@ -1,0 +1,85 @@
+SIGame Direct IP 1.0.8 — unofficial modified version.
+Original projects: SI and SIOnline by Vladimir Khil and their contributors.
+SI base: 1424281e0d13ae1192892365e32a28f1e7aefb40, MIT.
+SIOnline base: dc37610fd5e44e8267d3386a8b6c6d7d0fa95b52, GNU GPL version 3.
+Original copyright and license notices remain in LICENSES.txt.
+
+Direct IP modifications made on 2026-11-14 and 2026-11-15:
+local host and IP connections; direct browser client; direct avatar/media transfer;
+participant ping and signed press timing; local menu integration; autoplay fixes.
+The modified client is provided under GPLv3; engine and separate DirectHost additions
+are provided under MIT. Third-party assets and dependencies retain their own terms.
+This notice does not grant additional rights to Steamworks, unlicensed packages,
+third-party fonts, media, trademarks or workshop content.
+
+This is not an official SIGame update. No endorsement by Vladimir Khil, other
+upstream contributors or Valve is claimed. Names identify the upstream project
+and compatibility. The original in-game author, composer and icon attributions
+are retained. Original music attribution: Vlad Hoshenko. Original avatar icon
+attribution: Famo / Flaticon. Attribution does not substitute for permission.
+
+Source and build information: README-BUILD.txt in the matching source archive.
+See CHANGELOG.txt here and MODIFIED-FILES.json in the matching source archive for changes; licenses and
+full texts are in LICENSES.txt; detailed audit inventories are in legal-audit in the source archive.
+
+The software is provided without warranty to the extent permitted by applicable law.
+Nothing here removes rights granted by GPL/MIT or applicable law.
+
+Packaging changed on 2026-11-15: SIGame.exe with adjacent DirectHost; installation replaces the original game executable. See README-RU.txt for installation and clean upgrade steps.
+Third-party license information: the notes below.
+
+2026-11-15, version 1.0.4: conservative .NET trimming, batched RTT snapshots, upload and HTML isolation hardening, dependency updates.
+
+2026-11-15, version 1.0.5: direct-session navigation and automatic host shutdown on return to the main menu; standalone stop button and confirmation removed.
+
+2026-11-15, version 1.0.6: full direct package menu, local-only library import, stale catalogue response protection, room settings forwarding.
+
+2026-11-15, packaging exe2: duplicate README removed; documents and firewall helpers grouped; build-only JSON and duplicate CSV omitted from the binary archive. Executables and game data are unchanged.
+
+2026-11-15, packaging revision 3: ThinLTO native build; developer-only .NET diagnostics and assembly XML docs omitted; duplicate license texts consolidated losslessly; unrelated SI applications omitted from source. Game features unchanged.
+
+Сведения о лицензиях — SIGame Direct IP 1.0.8
+
+Оригинальные проекты:
+SI — MIT, исходная ревизия 1424281e0d13ae1192892365e32a28f1e7aefb40.
+SIOnline — корневой LICENSE GNU GPLv3,
+исходная ревизия dc37610fd5e44e8267d3386a8b6c6d7d0fa95b52.
+В package.json веб-клиента указана MIT; в Cargo.toml нативного клиента — GPLv3.
+Это расхождение сохранено как в оригинальных метаданных.
+
+Изменения и даты перечислены в NOTICE.txt и CHANGELOG.txt;
+подробный MODIFIED-FILES.json находится в архиве исходников. Исходники, инструкция сборки и зависимости
+подготовлены отдельно для той же версии. Название SIGame обозначает исходный
+проект и совместимость; одобрение автором или Valve не заявляется.
+
+Полная исходная инвентаризация 555 компонентов сохранена в legal-audit/dependency-inventory.json в полном архиве исходников релиза.
+Для готовой сборки оставлено 404 записи; обоснование отбора — legal-audit/release-license-selection.json в том же архиве.
+Полные тексты лицензий и уведомлений — в LICENSES.txt. Не найденные тексты
+перечислены в legal-audit/notice-findings.json в архиве исходников. Эти данные фиксируют результат
+проверки файлов и метаданных, а не юридическое заключение.
+
+Неуточнённые сведения:
+- В просмотренных документах не найдено явного исключения для сочетания
+  GPLv3-клиента и Steamworks SDK в сторонней сборке.
+- В accountservice-client 1.3.0 отсутствуют указание лицензии, отдельный LICENSE
+  и ссылка на соответствующий исходный репозиторий.
+- Для Clefs и части музыкальных/графических ресурсов отдельные условия
+  распространения не установлены; исходные атрибуции сохранены.
+- Полнота соответствующих исходников всех сторонних компонентов не подтверждена.
+
+Отдельный запуск и отсутствие замены файлов не предоставляют дополнительных
+прав на сторонний код, ресурсы, товарные знаки или пакеты мастерской.
+Имеющиеся лицензии и права, предоставленные ими, остаются в силе.
+
+Источники:
+https://github.com/VladimirKhil/SI
+https://github.com/VladimirKhil/SIOnline
+https://partner.steamgames.com/doc/sdk/uploading/distributing_opensource
+
+2026-11-15, version 1.0.8: owner-controlled room cleanup and reconnect grace; direct preload pacing; static profile thumbnails; per-user ping/reaction visibility; host-address badge removed.
+
+2026-11-15, version 1.0.8: center showman name independently of ping; place player ping/reaction inside the score frame; omit millisecond suffix in visible indicators.
+
+2026-11-15, documentation packaging revision 4: removed 158 unused dependency entries; added 7 generated/runtime helper entries and complete .NET third-party notices. Full source/build notices remain in legal-audit. Generated-code dependencies are retained where exclusion was not established. Executable and web/server bytes are unchanged. This selection does not resolve the licensing caveats above.
+
+2026-11-16, documentation packaging revision 5: clarified release downloads, source layouts and installation instructions; refreshed validation notes and firewall-helper labels. The repository stores pinned upstream patches; the full source archive retains the expanded sources. Executable and web/server bytes are unchanged. Licensing caveats above remain unresolved.

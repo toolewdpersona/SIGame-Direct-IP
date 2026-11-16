@@ -1,0 +1,39 @@
+# Generated dependencies and build outputs
+**/node_modules/
+**/bin/
+**/obj/
+**/target/
+**/dist/
+**/dist-web/
+**/.vs/
+**/.idea/
+**/TestResults/
+**/playwright-report/
+**/test-results/
+/publish*/
+/.build*/
+*.exe
+*.dll
+*.zip
+*.log
+
+# Local credentials and environment settings
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+
+# Standalone validation/audit artifacts are retained in the full release source archive.
+/HostChecks/
+/LibraryChecks/
+/legal-audit/
+/verify-*.cjs
+/avatar-*
+/*-test.siq
+/*-checks.json
+/EXCLUDED-FILES.json
+/MODIFIED-FILES.json
+/VALIDATION-HISTORY.txt
+/packaging-version.json

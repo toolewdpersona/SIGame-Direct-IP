@@ -1,0 +1,15 @@
+diff --git a/src/SICore/SICore/Clients/Game/Game.cs b/src/SICore/SICore/Clients/Game/Game.cs
+index 79792ae6174618fad515ae5932e1e98962ff2eca..00aa8998c63f09339c3751e0d6a0238ef549a891 100644
+--- a/src/SICore/SICore/Clients/Game/Game.cs
++++ b/src/SICore/SICore/Clients/Game/Game.cs
+@@ -2605,7 +2605,9 @@ public sealed class Game : MessageHandler
+ 
+         if (!_state.IsDeferringAnswer)
+         {
+-            _state.WaitInterval = _state.TimeSettings.ButtonsAccepting / 100;
++            // TaskRunner uses tenths of a second; zero disables its timer and stalls the answer.
++            // Match the minimum used by RandomWithinInterval for sub-100 ms settings.
++            _state.WaitInterval = Math.Max(1, _state.TimeSettings.ButtonsAccepting / 100);
+             _controller.Stop(StopReason.Wait);
+         }
+     }

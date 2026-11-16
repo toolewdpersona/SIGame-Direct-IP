@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "projects": [
+    {
+      "name": "SI",
+      "repository": "https://github.com/VladimirKhil/SI.git",
+      "commit": "1424281e0d13ae1192892365e32a28f1e7aefb40",
+      "patch": "SI.patch",
+      "sha256": "8390e7da8697b94bcd2a571fc06898164708bf9e068989233c6698f6edb0ed8d",
+      "patchedTree": "d2f5e7b6852b5974bdf4a1553a926a0cb061bb96",
+      "sparsePaths": [
+        "/Directory.Build.props",
+        "/LICENSE",
+        "/NuGet.Config",
+        "/README.md",
+        "/src/Common/Notions/",
+        "/src/Common/SIEngine.Core/",
+        "/src/Common/SIEngine/",
+        "/src/Common/SIPackages/",
+        "/src/Common/SIUI.Model/",
+        "/src/Common/Utils/",
+        "/src/SICore/SI.Contracts/",
+        "/src/SICore/SICore.Connections/",
+        "/src/SICore/SICore.Network/",
+        "/src/SICore/SICore/",
+        "/src/SICore/SIData/"
+      ]
+    },
+    {
+      "name": "SIOnline",
+      "repository": "https://github.com/VladimirKhil/SIOnline.git",
+      "commit": "dc37610fd5e44e8267d3386a8b6c6d7d0fa95b52",
+      "patch": "SIOnline.patch",
+      "sha256": "956feda87554705d5e4b941f10b712b4d987b1f5dc7ba31bf0d17421815ee141",
+      "patchedTree": "42a42c0033fd3ef14ca375563bcbcffac7cc0e87",
+      "sparsePaths": [
+        "/*",
+        "!/assets/fonts/FuturaC.eot",
+        "!/assets/fonts/FuturaC.otf",
+        "!/assets/fonts/FuturaC.svg",
+        "!/assets/fonts/FuturaC.ttf",
+        "!/assets/fonts/FuturaC.woff",
+        "!/tauri/dlls/steam_api.dll",
+        "!/tauri/dlls/steam_api64.dll"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Patch checksums must remain identical on Windows and Unix checkouts.
+patches/*.patch -text -whitespace

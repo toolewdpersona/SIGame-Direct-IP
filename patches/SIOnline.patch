@@ -1,0 +1,3895 @@
+diff --git a/.gitignore b/.gitignore
+index 0179603ad497d3b26cae6ec3b61218a415153c5d..68d1d3627031ac181b555680ced605a821a712bb 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -260,6 +260,7 @@ paket-files/
+ __pycache__/
+ *.pyc
+ /dist
++/dist-web
+ /tauri/dist
+ test-screenshots/
+ # Playwright
+diff --git a/assets/config.js b/assets/config.js
+index 56719bc2c34c537492b2121bff26b17e6560d160..dd54d094dcd1c04293cb1b9ac52daf21eb5332de 100644
+--- a/assets/config.js
++++ b/assets/config.js
+@@ -1,4 +1,5 @@
+ config = {
++    directConnectionEnabled: true,
+     serverDiscoveryUri: 'https://vladimirkhil.com/api/si/servers',
+     rootUri: '/',
+     ads: '<b></b>',
+diff --git a/assets/direct-web-config.js b/assets/direct-web-config.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b45f9a363ebd1c90cf0e6d4f15bfc7f86b9c3b8d
+--- /dev/null
++++ b/assets/direct-web-config.js
+@@ -0,0 +1,18 @@
++// Served by the direct host itself. Never discover or contact a public SIGame service.
++config = {
++    directMode: true,
++    directConnectionEnabled: false,
++    serverUri: window.location.origin,
++    rootUri: '/',
++    ads: '',
++    rewriteUrl: false,
++    forceHttps: false,
++    registerServiceWorker: false,
++    enableNoSleep: false,
++    askForConsent: false,
++    siStatisticsServiceUri: '',
++    appRegistryServiceUri: '',
++    clearUrls: true
++};
++
++firebaseConfig = null;
+diff --git a/assets/fonts/Jost-OFL.txt b/assets/fonts/Jost-OFL.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85b6b99d12470b54d8cbc919bc45102d99f23437
+--- /dev/null
++++ b/assets/fonts/Jost-OFL.txt
+@@ -0,0 +1,93 @@
++Copyright 2020 The Jost Project Authors (https://github.com/indestructible-type)
++
++This Font Software is licensed under the SIL Open Font License, Version 1.1.
++This license is copied below, and is also available with a FAQ at:
++http://scripts.sil.org/OFL
++
++
++-----------------------------------------------------------
++SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
++-----------------------------------------------------------
++
++PREAMBLE
++The goals of the Open Font License (OFL) are to stimulate worldwide
++development of collaborative font projects, to support the font creation
++efforts of academic and linguistic communities, and to provide a free and
++open framework in which fonts may be shared and improved in partnership
++with others.
++
++The OFL allows the licensed fonts to be used, studied, modified and
++redistributed freely as long as they are not sold by themselves. The
++fonts, including any derivative works, can be bundled, embedded, 
++redistributed and/or sold with any software provided that any reserved
++names are not used by derivative works. The fonts and derivatives,
++however, cannot be released under any other type of license. The
++requirement for fonts to remain under this license does not apply
++to any document created using the fonts or their derivatives.
++
++DEFINITIONS
++"Font Software" refers to the set of files released by the Copyright
++Holder(s) under this license and clearly marked as such. This may
++include source files, build scripts and documentation.
++
++"Reserved Font Name" refers to any names specified as such after the
++copyright statement(s).
++
++"Original Version" refers to the collection of Font Software components as
++distributed by the Copyright Holder(s).
++
++"Modified Version" refers to any derivative made by adding to, deleting,
++or substituting -- in part or in whole -- any of the components of the
++Original Version, by changing formats or by porting the Font Software to a
++new environment.
++
++"Author" refers to any designer, engineer, programmer, technical
++writer or other person who contributed to the Font Software.
++
++PERMISSION & CONDITIONS
++Permission is hereby granted, free of charge, to any person obtaining
++a copy of the Font Software, to use, study, copy, merge, embed, modify,
++redistribute, and sell modified and unmodified copies of the Font
++Software, subject to the following conditions:
++
++1) Neither the Font Software nor any of its individual components,
++in Original or Modified Versions, may be sold by itself.
++
++2) Original or Modified Versions of the Font Software may be bundled,
++redistributed and/or sold with any software, provided that each copy
++contains the above copyright notice and this license. These can be
++included either as stand-alone text files, human-readable headers or
++in the appropriate machine-readable metadata fields within text or
++binary files as long as those fields can be easily viewed by the user.
++
++3) No Modified Version of the Font Software may use the Reserved Font
++Name(s) unless explicit written permission is granted by the corresponding
++Copyright Holder. This restriction only applies to the primary font name as
++presented to the users.
++
++4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
++Software shall not be used to promote, endorse or advertise any
++Modified Version, except to acknowledge the contribution(s) of the
++Copyright Holder(s) and the Author(s) or with their explicit written
++permission.
++
++5) The Font Software, modified or unmodified, in part or in whole,
++must be distributed entirely under this license, and must not be
++distributed under any other license. The requirement for fonts to
++remain under this license does not apply to any document created
++using the Font Software.
++
++TERMINATION
++This license becomes null and void if any of the above conditions are
++not met.
++
++DISCLAIMER
++THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
++OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
++COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
++DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
++OTHER DEALINGS IN THE FONT SOFTWARE.
+diff --git a/package-lock.json b/package-lock.json
+index 9b6d6518aa8a08af25251e0f4edae54176dca735..c8f798a04c2cf728b8dbaa5e73362220dc28447f 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -3111,16 +3111,34 @@
+       "license": "Apache-2.0"
+     },
+     "node_modules/@grpc/grpc-js": {
+-      "version": "1.9.16",
+-      "resolved": "https://registry.npmjs.org/@grpc/grpc-js/-/grpc-js-1.9.16.tgz",
+-      "integrity": "sha512-wE4Ut/olIzfKqp631XrG+wbF0v1vWFN4YL9FyXC2LJiG33DsV7PLzURjrCvY/6je2ntdRkeLpPDluzSRGaVltQ==",
++      "version": "1.14.7",
++      "resolved": "https://registry.npmjs.org/@grpc/grpc-js/-/grpc-js-1.14.7.tgz",
++      "integrity": "sha512-W4W/fcBMGRVtG6dW2c7cw2mnpS3hvbBd+oQXjh2iYFTZDk1JJmcNqkM5KSaPubQpamlUUurrlb7G1s9NJeERmQ==",
+       "license": "Apache-2.0",
+       "dependencies": {
+-        "@grpc/proto-loader": "^0.7.8",
+-        "@types/node": ">=12.12.47"
++        "@grpc/proto-loader": "^0.8.0",
++        "@js-sdsl/ordered-map": "^4.4.2"
++      },
++      "engines": {
++        "node": ">=12.10.0"
++      }
++    },
++    "node_modules/@grpc/grpc-js/node_modules/@grpc/proto-loader": {
++      "version": "0.8.1",
++      "resolved": "https://registry.npmjs.org/@grpc/proto-loader/-/proto-loader-0.8.1.tgz",
++      "integrity": "sha512-wtF6h+DY6M3YaDBPAmvuuA6jV8Sif9MjtOI5euKFWRgCDl5PeDpPsHR9u2l6St5ceY8AZgoNDww5+HvEsXFsGg==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "lodash.camelcase": "^4.3.0",
++        "long": "^5.0.0",
++        "protobufjs": "^7.5.5",
++        "yargs": "^17.7.2"
++      },
++      "bin": {
++        "proto-loader-gen-types": "build/bin/proto-loader-gen-types.js"
+       },
+       "engines": {
+-        "node": "^8.13.0 || >=10.10.0"
++        "node": ">=6"
+       }
+     },
+     "node_modules/@grpc/proto-loader": {
+@@ -4128,6 +4146,16 @@
+         "@jridgewell/sourcemap-codec": "^1.4.14"
+       }
+     },
++    "node_modules/@js-sdsl/ordered-map": {
++      "version": "4.4.2",
++      "resolved": "https://registry.npmjs.org/@js-sdsl/ordered-map/-/ordered-map-4.4.2.tgz",
++      "integrity": "sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==",
++      "license": "MIT",
++      "funding": {
++        "type": "opencollective",
++        "url": "https://opencollective.com/js-sdsl"
++      }
++    },
+     "node_modules/@jsonjoy.com/base64": {
+       "version": "1.1.2",
+       "resolved": "https://registry.npmjs.org/@jsonjoy.com/base64/-/base64-1.1.2.tgz",
+diff --git a/package.json b/package.json
+index 2129e36bdf27214ddd29649a3a60cf2f5b40a595..dba9cfd0ae6e4d327c9aeeff1085092be70e5814 100644
+--- a/package.json
++++ b/package.json
+@@ -8,6 +8,7 @@
+     "build-prod": "webpack --mode production",
+     "build-steam-dev": "webpack --mode development --env isSteam=true",
+     "build-steam": "webpack --mode production --env isSteam=true",
++    "build-direct-web": "webpack --mode production --env isDirectWeb=true",
+     "build-lib-table": "webpack --mode production --env type=library-table",
+     "build-lib-player": "webpack --mode production --env type=library-player",
+     "build-lib-quest": "webpack --mode production --env type=library-quest",
+@@ -48,6 +49,7 @@
+     "sistorage-client": "1.4.0"
+   },
+   "overrides": {
++    "@grpc/grpc-js": "^1.14.5",
+     "@microsoft/signalr": {
+       "eventsource": "^2.0.2"
+     },
+diff --git a/src/Config.ts b/src/Config.ts
+index 029dbc1d230f21f18aa73d677d9f9c1c8dc44646..639bff9707e77a03dafd09fcf407fbeefbadb51c 100644
+--- a/src/Config.ts
++++ b/src/Config.ts
+@@ -1,4 +1,6 @@
+ export default interface Config {
++	directConnectionEnabled?: boolean;
++	directMode?: boolean;
+ 	serverUri?: string;
+ 	serverDiscoveryUri?: string;
+ 	rootUri?: string;
+diff --git a/src/Index.tsx b/src/Index.tsx
+index 5c5f45e4f1bccb5ab75047eb3df895f55297d5fd..0a8cb33f62f639c97b6d85fb92891437bd63c052 100644
+--- a/src/Index.tsx
++++ b/src/Index.tsx
+@@ -51,6 +51,10 @@ import { moveNext, onPass, pauseGame } from './state/serverActions';
+ import { setAnalytics } from './utils/Analytics';
+ import { getPressedKey, matchesKey } from './utils/KeyHelpers';
+ 
++import { directConfig, DirectSession, getDirectSession, restrictDirectFetch, setDirectSession } from './utils/DirectConnection';
++import { DirectLauncherContext, takeLaunch } from './utils/DirectLauncher';
++import PackageType from './model/enums/PackageType';
++
+ import './utils/polyfills';
+ import './scss/style.scss';
+ 
+@@ -154,6 +158,8 @@ function setState(state: State, savedState: SavedState | null, c: Config, isDesk
+ 			logPointsEvent: savedState.settings.logPointsEvent ?? true,
+ 			gameButtonKey: savedState.settings.gameButtonKey || Constants.KEY_SPACE,
+ 			clickableAnswer: savedState.settings.clickableAnswer ?? true,
++			showDirectPing: savedState.settings.showDirectPing ?? true,
++			showDirectReaction: savedState.settings.showDirectReaction ?? true,
+ 		} : state.settings,
+ 		history: savedState.history ? {
+ 			...state.history,
+@@ -322,7 +328,7 @@ function getInitialView(historyState: INavigationState): INavigationState {
+ 	return { path: Path.Root };
+ }
+ 
+-async function run(host: IHost) {
++async function run(host: IHost, options: { menuOnly?: boolean; initialView?: INavigationState } = {}) {
+ 	try {
+ 		if (!config) {
+ 			throw new Error('Config is undefined!');
+@@ -331,7 +337,7 @@ async function run(host: IHost) {
+ 		validateBrowser();
+ 
+ 		try {
+-			if (firebaseConfig) {
++			if (firebaseConfig && !config.directMode && !options.menuOnly) {
+ 				// Initialize Firebase
+ 				app = initializeApp(firebaseConfig);
+ 				analytics = getAnalytics(app);
+@@ -341,19 +347,25 @@ async function run(host: IHost) {
+ 			console.error(e);
+ 		}
+ 
+-		let { serverUri } = config;
++		const { serverUri } = config;
+ 
+ 		const savedState = loadState();
+-		const state = setState(initialState, savedState, config, host.isDesktop());
++		const loadedState = setState(initialState, savedState, config, host.isDesktop());
++		const state = config.directMode ? {
++			...loadedState,
++			settings: { ...loadedState.settings, useProxy2: false },
++			game: { ...loadedState.game, package: { ...loadedState.game.package, type: PackageType.File } },
++			common: { ...loadedState.common, clearUrls: true },
++		} : loadedState;
+ 
+-		const gameClient = new GameServerClient(serverUri || '');
++		const gameClient = new GameServerClient(serverUri || '', !!config.directMode);
+ 
+ 		const dataContext: DataContext = {
+ 			config,
+ 			serverUri: serverUri || '',
+ 			proxyUri: undefined,
+ 			gameClient,
+-			game: new GameClient(new SIHostClient()),
++			game: new GameClient(new SIHostClient(!!config.directMode)),
+ 			contentUris: null,
+ 			contentClients: [],
+ 			storageClients: [],
+@@ -407,7 +419,7 @@ async function run(host: IHost) {
+ 		});
+ 
+ 		subscribeToExternalEvents(store, host);
+-		subscribeToRichPresence(store, host);
++		if (!config.directMode && !options.menuOnly) { subscribeToRichPresence(store, host); }
+ 
+ 		store.dispatch(windowSizeChanged({ width: window.innerWidth, height: window.innerHeight }));
+ 		store.dispatch(setFullScreenSupported(host.isFullScreenSupported()));
+@@ -430,7 +442,9 @@ async function run(host: IHost) {
+ 			<React.StrictMode>
+ 				<Provider store={store}>
+ 					<AudioContextProvider>
+-						<App />
++						<DirectLauncherContext.Provider value={{ enabled: !!config.directConnectionEnabled, menuOnly: !!options.menuOnly }}>
++							<App />
++						</DirectLauncherContext.Provider>
+ 					</AudioContextProvider>
+ 				</Provider>
+ 			</React.StrictMode>,
+@@ -439,7 +453,15 @@ async function run(host: IHost) {
+ 
+ 		await dataContext.host.initAsync(store);
+ 
+-		const initialView = getInitialView(dataContext.host.loadNavigationState() as INavigationState);
++		if (options.menuOnly) {
++			store.dispatch(actionCreators.initStageSkipLoginLicenseAsync(
++				{ path: Path.Menu }, store.dispatch, { skipLoginGuard: true }) as unknown as Action);
++			return;
++		}
++
++		const initialView = options.initialView ?? (config.directMode
++			? { path: getDirectSession()?.isHost ? Path.NewRoom : Path.Lobby, newGameMode: 'multi' as const }
++			: getInitialView(dataContext.host.loadNavigationState() as INavigationState));
+ 		store.dispatch(actionCreators.initStage0(initialView, store.dispatch) as unknown as Action);
+ 	} catch (e: any) {
+ 		ReactDOM.render(
+@@ -479,8 +501,40 @@ function getHost(originValue: string | null): IHost {
+ 	}
+ }
+ 
+-const host = getHost(origin);
+-run(host);
++function startSession(session: DirectSession | null): void {
++	setDirectSession(session);
++	if (session) {
++		Object.assign(config!, directConfig(config!, session.uri));
++	}
++	const host = session
++		? (window.__TAURI__ ? (isSteam ? new SteamTauriHost(false, true) : new TauriHost(false, false)) : new BrowserHost(false))
++		: getHost(origin);
++	if (session) {
++		restrictDirectFetch(session.uri);
++	}
++	void run(host);
++}
++
++if (config.directMode && !window.__TAURI__) {
++	// The bundled web client joins only the host that served this page.
++	startSession({ uri: window.location.origin, isHost: false, addresses: [] });
++} else if (config.directConnectionEnabled) {
++	const launch = takeLaunch();
++	if (launch && 'session' in launch) {
++		startSession(launch.session);
++	} else if (launch && 'navigation' in launch) {
++		void run(getHost(origin), { initialView: launch.navigation });
++	} else {
++		// The real main menu is local: official authentication starts only after choosing an online mode.
++		config.appRegistryServiceUri = '';
++		config.siStatisticsServiceUri = '';
++		const host = window.__TAURI__
++			? (isSteam ? new SteamTauriHost(false, true) : new TauriHost(false, false)) : new BrowserHost(false);
++		void run(host, { menuOnly: true });
++	}
++} else {
++	void run(getHost(origin));
++}
+ 
+ if ('serviceWorker' in navigator && config && config.registerServiceWorker) {
+ 	window.addEventListener('load', registerServiceWorker2);
+diff --git a/src/client/GameServerClient.ts b/src/client/GameServerClient.ts
+index ef95c8eeef8f3b2b9cedbbcaf4f2d288b9da6704..9b680bcabbfaae7be0f2901b0fc38f280a812605 100644
+--- a/src/client/GameServerClient.ts
++++ b/src/client/GameServerClient.ts
+@@ -21,7 +21,7 @@ export default class GameServerClient implements IGameServerClient {
+ 	/**
+ 	 * Initializes a new instance of {@link GameServerClient}.
+ 	 */
+-	constructor(private serverUri: string) { }
++	constructor(private serverUri: string, private directMode = false) { }
+ 
+ 	setServerUri(uri: string): void {
+ 		this.serverUri = uri;
+@@ -36,8 +36,11 @@ export default class GameServerClient implements IGameServerClient {
+ 			.withAutomaticReconnect({
+ 				nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => 1000 * (retryContext.previousRetryCount + 1)
+ 			})
+-			.withUrl(`${runtimeUri}/sionline`)
+-			.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());
++			.withUrl(`${runtimeUri}/sionline`);
++
++		if (!this.directMode) {
++			connectionBuilder.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());
++		}
+ 
+ 		this.connection = connectionBuilder.build();
+ 
+diff --git a/src/client/ISIHostListener.ts b/src/client/ISIHostListener.ts
+index 7bae407c41c9e8d696fb2772954258572a8dd1ff..7b1625c533a031ef4cce4725148b584796044c4d 100644
+--- a/src/client/ISIHostListener.ts
++++ b/src/client/ISIHostListener.ts
+@@ -1,7 +1,9 @@
+ import Message from './contracts/Message';
+ import PersonInfo from './contracts/PersonInfo';
++import DirectPlayerMetrics from './contracts/DirectPlayerMetrics';
+ 
+ export default interface ISIHostListener {
++	onDirectMetrics?(players: DirectPlayerMetrics[]): void;
+ 	onReceive(message: Message): void;
+ 	onDisconnect(): void;
+ 	onGamePersonsChanged(gameId: number, persons: PersonInfo[]): void;
+@@ -9,4 +11,4 @@ export default interface ISIHostListener {
+ 	onReconnecting(error?: Error): void;
+ 	onReconnected(): void;
+ 	onClose(error?: Error): void;
+-}
+\ No newline at end of file
++}
+diff --git a/src/client/SIHostClient.ts b/src/client/SIHostClient.ts
+index dd35cedd6c97381f8f07d269cd209b861044d82f..61e81e3f99f987b7456c5d53bf61ebb9492556c2 100644
+--- a/src/client/SIHostClient.ts
++++ b/src/client/SIHostClient.ts
+@@ -7,6 +7,9 @@ import JoinGame2Result from './contracts/JoinGame2Result';
+ import JoinGameRequest from './contracts/JoinGameRequest';
+ import ServerRole from './contracts/ServerRole';
+ import DefaultEndpoints from './system/DefaultEndpoints';
++import DirectPressClock from '../utils/DirectPressClock';
++import Message from './contracts/Message';
++import DirectPlayerMetrics from './contracts/DirectPlayerMetrics';
+ 
+ export class ReconnectError extends Error {
+ 	constructor(public result: JoinGame2Result) {
+@@ -16,9 +19,12 @@ export class ReconnectError extends Error {
+ }
+ 
+ export default class SIHostClient implements ISIHostClient {
++	constructor(private directMode = false) { }
++
+ 	private isDisconnecting = false;
+ 
+ 	private joinInfo: JoinGameRequest | null = null;
++	private readonly pressClock = new DirectPressClock();
+ 
+ 	private completed = false;
+ 
+@@ -52,15 +58,39 @@ export default class SIHostClient implements ISIHostClient {
+ 			connectionBuilder.withUrl(connectionUrl);
+ 		}
+ 
+-		connectionBuilder.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());
++		if (!this.directMode) {
++			connectionBuilder.withHubProtocol(new signalRMsgPack.MessagePackHubProtocol());
++		}
+ 
+ 		this.connection = connectionBuilder.build();
+ 
+-		this.connection.on('Receive', listener.onReceive.bind(listener));
++		this.pressClock.reset();
++		if (this.directMode) {
++			listener.onDirectMetrics?.([]);
++			const connection = this.connection;
++			connection.on('DirectPing', (nonce: string) => { void connection.invoke('DirectPong', nonce).catch(() => {}); });
++			connection.on('DirectMetrics', (players: DirectPlayerMetrics[]) => listener.onDirectMetrics?.(players));
++		}
++		this.connection.on('Receive', (message: Message) => {
++			if (this.directMode && message.IsSystem && message.Sender === '@' && message.Text === 'GAME_CLOSED') {
++				this.completed = true;
++				this.joinInfo = null;
++				void this.disconnectAsync().catch(error => listener.onError(error));
++			}
++			if (this.directMode) {
++				const early = this.pressClock.observe(message);
++				if (early) {
++					void this.connection?.invoke('ReportEarlyPress', early.DirectAttemptId, early.DirectReactionMs).catch(() => {});
++				}
++			}
++			listener.onReceive(message);
++		});
+ 		this.connection.on('Disconnect', listener.onDisconnect.bind(listener));
+ 		this.connection.on('GamePersonsChanged', listener.onGamePersonsChanged.bind(listener));
+ 
+ 		this.connection.onreconnecting(e => {
++			this.pressClock.reset();
++			if (this.directMode) { listener.onDirectMetrics?.([]); }
+ 			if (this.isDisconnecting) {
+ 				return;
+ 			}
+@@ -84,6 +114,8 @@ export default class SIHostClient implements ISIHostClient {
+ 		});
+ 
+ 		this.connection.onclose(async e => {
++			this.pressClock.reset();
++			if (this.directMode) { listener.onDirectMetrics?.([]); }
+ 			if (this.isDisconnecting) {
+ 				return;
+ 			}
+@@ -126,6 +158,10 @@ export default class SIHostClient implements ISIHostClient {
+ 		this.connection.off('Receive');
+ 		this.connection.off('Disconnect');
+ 		this.connection.off('GamePersonsChanged');
++		this.connection.off('DirectPing');
++		this.connection.off('DirectMetrics');
++		this.pressClock.reset();
++		if (this.directMode) { this.listener?.onDirectMetrics?.([]); }
+ 
+ 		this.isDisconnecting = true;
+ 
+@@ -178,8 +214,10 @@ export default class SIHostClient implements ISIHostClient {
+ 			throw new Error('Not connected to server');
+ 		}
+ 
++		const timing = this.directMode && message.split('\n', 1)[0] === 'I' ? this.pressClock.capture() : null;
+ 		try {
+ 			await this.connection.invoke('SendMessage', {
++				...timing,
+ 				Text: message,
+ 				IsSystem: true,
+ 				Sender: this.userName,
+@@ -248,7 +286,11 @@ export default class SIHostClient implements ISIHostClient {
+ 
+ 	/** Leaves game and finishes processing. */
+ 	async leaveGameAsync(): Promise<any> {
++		const wasJoined = this.joinInfo !== null;
+ 		this.joinInfo = null;
+ 		this.completed = true;
++		if (this.directMode && wasJoined && this.connection?.state === signalR.HubConnectionState.Connected) {
++			await this.connection.invoke('LeaveGame');
++		}
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/client/contracts/DirectPlayerMetrics.ts b/src/client/contracts/DirectPlayerMetrics.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..f72daf724cca387cf714f0a692454ce2fda7b81b
+--- /dev/null
++++ b/src/client/contracts/DirectPlayerMetrics.ts
+@@ -0,0 +1,5 @@
++export default interface DirectPlayerMetrics {
++	Name: string;
++	PingMs: number | null;
++	ReactionMs: number | null;
++}
+diff --git a/src/client/contracts/JoinGameRequest.ts b/src/client/contracts/JoinGameRequest.ts
+index 981a7e0b315e7d53e46c8f2780730dfa51c9e078..f37d33892f29a7cb9e5ba2df08919abf1aef994a 100644
+--- a/src/client/contracts/JoinGameRequest.ts
++++ b/src/client/contracts/JoinGameRequest.ts
+@@ -6,6 +6,7 @@ import AuthorizationMode from './AuthorizationMode';
+  * Contains data required to join a game.
+  */
+ export default interface JoinGameRequest {
++    HostToken?: string;
+     /**
+      * Game identifier.
+      */
+diff --git a/src/client/contracts/Message.ts b/src/client/contracts/Message.ts
+index d23b661342806b9699e16619aede90bc72c29cc3..c56095783b24169d1bdf3e7685401700090093ec 100644
+--- a/src/client/contracts/Message.ts
++++ b/src/client/contracts/Message.ts
+@@ -3,4 +3,5 @@ export default interface Message {
+ 	IsSystem: boolean;
+ 	Sender: string;
+ 	Text: string;
++	DirectAttemptId?: number | null;
+ }
+diff --git a/src/client/contracts/RunGameResponse.ts b/src/client/contracts/RunGameResponse.ts
+index 9abc330548c903893cd529df3c95eeeef09761f6..2e1f4ac10f1d8680829eed484c04f03055b5a16f 100644
+--- a/src/client/contracts/RunGameResponse.ts
++++ b/src/client/contracts/RunGameResponse.ts
+@@ -2,6 +2,7 @@ import GameCreationResultCode from './GameCreationResultCode';
+ 
+ /** Defines a run game response. */
+ export default interface RunGameResponse {
++	hostToken?: string;
+ 	/** Is run successfull. */
+ 	isSuccess: boolean;
+ 
+diff --git a/src/components/DirectConnection/DirectConnection.scss b/src/components/DirectConnection/DirectConnection.scss
+new file mode 100644
+index 0000000000000000000000000000000000000000..e489528a9c6d53db9a80671e03749de8fb68a634
+--- /dev/null
++++ b/src/components/DirectConnection/DirectConnection.scss
+@@ -0,0 +1,94 @@
++.welcomeView .directMenuArea {
++	justify-content: flex-start;
++	overflow-y: auto;
++}
++.welcomeViewActions.directMenu {
++	width: min(820px, calc(100% - 24px));
++	flex: 0 0 auto;
++	margin-bottom: 32px;
++	box-sizing: border-box;
++	button {
++		flex: 0 0 auto;
++		min-height: 64px;
++		padding: 12px 16px;
++		text-transform: uppercase;
++	}
++}
++@media screen and (min-height: 900px) {
++	.welcomeViewActions.directMenu button { min-height: 84px; }
++}
++.welcomeView .directMenuArea:has(.directConnectionForm) {
++	justify-content: center;
++	box-sizing: border-box;
++	padding: 24px 12px 40px;
++	.logo, .logoMini { flex-basis: 140px; margin: 0 0 28px; }
++	~ .links { display: none; }
++}
++.directConnectionForm {
++	box-sizing: border-box;
++	width: min(660px, 100%);
++	flex: 0 0 auto;
++	padding: 28px;
++	border: 1px solid #ffffff33;
++	border-radius: 8px;
++	background: #ffffff0a;
++	h2 { margin: 0 0 10px; font-size: 28px; font-weight: 500; }
++	p { margin: 0; line-height: 1.5; }
++	&__description { color: #d4dcf3; font-size: 16px; }
++	&__fields {
++		display: grid;
++		gap: 20px;
++		align-items: end;
++		margin: 28px 0 20px;
++		&--host { grid-template-columns: 150px minmax(0, 1fr); }
++		&--join { grid-template-columns: minmax(0, 1fr) 150px; }
++	}
++	label { display: block; min-width: 0; font-size: 16px; }
++	input {
++		display: block;
++		box-sizing: border-box;
++		width: 100%;
++		height: 48px;
++		margin-top: 8px;
++		padding: 10px 12px;
++		color: #fff;
++		background: #ffffff12;
++		border: 1px solid #ffffff55;
++		border-radius: 4px;
++		font: inherit;
++		font-size: 20px;
++	}
++	&__portHint { color: #bac4e3; font-size: 14px; padding-bottom: 3px; }
++	&__hint { color: #bac4e3; font-size: 14px; }
++	p.directConnectionForm__error { margin-top: 16px; color: #ffbdc1; overflow-wrap: anywhere; }
++	&__actions {
++		display: flex;
++		justify-content: space-between;
++		gap: 16px;
++		margin-top: 24px;
++		padding-top: 24px;
++		border-top: 1px solid #ffffff24;
++		button { min-height: 48px; padding: 10px 24px; font: inherit; font-size: 18px; }
++		button:disabled { opacity: 0.6; }
++		button.standard.directConnectionForm__back { background: transparent; border-color: #ffffff33; }
++		button.standard.directConnectionForm__submit { background: #ffffff26; border-color: #ffffff66; }
++		button.standard:hover:not(:disabled) { background: #ffffff40; }
++	}
++}
++@media screen and (max-height: 700px) {
++	.welcomeView .directMenuArea:has(.directConnectionForm) {
++		justify-content: flex-start;
++		padding-top: 12px;
++		.logo, .logoMini { flex-basis: 100px; margin-bottom: 20px; }
++	}
++}
++@media screen and (max-width: 520px) {
++	.directConnectionForm {
++		padding: 20px;
++		h2 { font-size: 24px; }
++		&__fields { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 24px; }
++		&__fields--host label { max-width: 150px; }
++		&__actions { gap: 12px; }
++		&__actions button { padding: 10px 16px; font-size: 16px; }
++	}
++}
+diff --git a/src/components/DirectConnection/DirectConnection.tsx b/src/components/DirectConnection/DirectConnection.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..454278eadaacea62e2d884fa14d1ef5f83283d6e
+--- /dev/null
++++ b/src/components/DirectConnection/DirectConnection.tsx
+@@ -0,0 +1,81 @@
++import * as React from 'react';
++import { createDirectUri, DirectSession, parseDirectPort } from '../../utils/DirectConnection';
++import './DirectConnection.scss';
++
++/** Starts a selected connection mode only after the user has chosen an endpoint. */
++interface Props {
++	onSelect: (session: DirectSession) => void;
++	onClose: () => void;
++}
++
++export default function DirectConnection({ onSelect, onClose }: Props): JSX.Element {
++	const [host, setHost] = React.useState(localStorage.getItem('directHost') || '');
++	const [port, setPort] = React.useState(localStorage.getItem('directPort') || '51234');
++	const [error, setError] = React.useState('');
++	const [busy, setBusy] = React.useState(false);
++	const [mode, setMode] = React.useState<'host' | 'join' | null>(null);
++
++	const connect = async () => {
++		setBusy(true);
++		setError('');
++		try {
++			const parsedPort = parseDirectPort(port);
++			localStorage.setItem('directPort', String(parsedPort));
++			if (mode === 'host') {
++				if (!window.__TAURI__?.core) {
++					throw new Error('Создание хоста доступно в настольной версии игры.');
++				}
++				const result: { uri: string; addresses: string[] } = await window.__TAURI__.core.invoke('start_direct_host', { port: parsedPort });
++				onSelect({ uri: result.uri, isHost: true, addresses: result.addresses });
++			} else {
++				const uri = createDirectUri(host, port);
++				localStorage.setItem('directHost', host.trim());
++				onSelect({ uri, isHost: false, addresses: [] });
++			}
++		} catch (e) {
++			setError(e instanceof Error ? e.message : String(e));
++			setBusy(false);
++		}
++	};
++
++	if (mode === null) {
++		return <nav className='welcomeViewActions directMenu' aria-label='Игра по IP'>
++			<button type='button' className='standard welcomeRow left' onClick={() => setMode('host')}>Создать хост</button>
++			<button type='button' className='standard welcomeRow right' onClick={() => setMode('join')}>Подключиться по IP</button>
++			<button type='button' className='standard welcomeRow left' onClick={onClose}>Назад</button>
++		</nav>;
++	}
++
++	return <form className='directConnectionForm' aria-labelledby='directFormTitle' onSubmit={event => { event.preventDefault(); void connect(); }}>
++		<h2 id='directFormTitle'>{mode === 'host' ? 'Создать хост' : 'Подключиться по IP'}</h2>
++		<p className='directConnectionForm__description'>
++			{mode === 'host'
++				? 'После запуска выберите пакет из файла, библиотеки или мастерской Steam и создайте комнату.'
++				: 'Введите адрес и порт, которые сообщил хост.'}
++		</p>
++		<div className={`directConnectionForm__fields directConnectionForm__fields--${mode}`}>
++			{mode === 'join' && <label htmlFor='directHost'>IP-адрес хоста
++				<input id='directHost' value={host} onChange={event => setHost(event.target.value)} placeholder='192.168.1.10' disabled={busy} />
++			</label>}
++			<label htmlFor='directPort'>Порт
++				<input id='directPort' inputMode='numeric' value={port} onChange={event => setPort(event.target.value)} disabled={busy}
++					aria-describedby={mode === 'host' ? 'directPortHint' : undefined} />
++			</label>
++			{mode === 'host' && <p id='directPortHint' className='directConnectionForm__portHint'>
++				Передайте друзьям адрес этого компьютера и указанный порт.
++			</p>}
++		</div>
++		<p className='directConnectionForm__hint'>
++			Для игры через Интернет адрес и порт хоста должны быть доступны другим игрокам.
++		</p>
++		{error && <p role='alert' className='directConnectionForm__error'>{error}</p>}
++		<div className='directConnectionForm__actions'>
++			<button className='standard welcomeRow directConnectionForm__back' type='button' disabled={busy}
++				onClick={() => { setMode(null); setError(''); }}>Назад</button>
++			<button className='standard welcomeRow directConnectionForm__submit' type='submit' disabled={busy}>
++				{busy ? 'Подключение…' : mode === 'host' ? 'Запустить хост' : 'Подключиться'}
++			</button>
++		</div>
++	</form>;
++}
++
+diff --git a/src/components/common/Link/Link.tsx b/src/components/common/Link/Link.tsx
+index a0c0a0de6c47202d4fe8953c8f7cc50f17f815b7..9e6c47a57a1bbc24423faa114b4234d2de2bd7dc 100644
+--- a/src/components/common/Link/Link.tsx
++++ b/src/components/common/Link/Link.tsx
+@@ -10,6 +10,8 @@ interface LinkProps {
+ 	title?: string;
+ 	className?: string;
+ 	onClick?: () => void;
++	/** Explicit package-menu links remain usable in direct mode. */
++	allowWhenUrlsHidden?: boolean;
+ }
+ 
+ export default function Link(props: LinkProps): JSX.Element {
+@@ -28,7 +30,7 @@ export default function Link(props: LinkProps): JSX.Element {
+ 		</a>;
+ 	}
+ 
+-	if (clearUrls) {
++	if (clearUrls && !props.allowWhenUrlsHidden) {
+ 		return props.children;
+ 	}
+ 
+diff --git a/src/components/game/ParticipantMetrics/ParticipantMetrics.scss b/src/components/game/ParticipantMetrics/ParticipantMetrics.scss
+new file mode 100644
+index 0000000000000000000000000000000000000000..e08a86b981b4de40ea116ee3825103325aca06a3
+--- /dev/null
++++ b/src/components/game/ParticipantMetrics/ParticipantMetrics.scss
+@@ -0,0 +1,45 @@
++.participantMetrics {
++	position: absolute;
++	right: 5px;
++	bottom: 5px;
++	z-index: 2;
++	display: flex;
++	flex-direction: column;
++	gap: 2px;
++	padding: 4px 6px;
++	border: 1px solid rgba(110, 140, 255, 0.35);
++	border-radius: 5px;
++	background: rgba(3, 5, 30, 0.88);
++	color: #becbf0;
++	font-size: 11px;
++	line-height: 1.2;
++	font-variant-numeric: tabular-nums;
++	white-space: nowrap;
++	pointer-events: auto;
++
++	span { display: flex; justify-content: flex-end; min-width: 42px; }
++	b { color: #eef3ff; font-weight: 600; }
++
++	&--ping, &--reaction {
++		position: static;
++		flex: 0 1 64px;
++		min-width: 0;
++		align-items: center;
++		justify-content: center;
++		padding: 0 4px;
++		border: 0;
++		background: none;
++		span { min-width: 0; justify-content: center; }
++	}
++}
++
++// Keep status icons out of the score/reaction and showman name rows.
++.playerCard.directParticipantCard .marksArea,
++.showmanInfo.directParticipantCard .marksArea {
++	top: 6px;
++	bottom: auto;
++	left: 6px;
++	right: auto;
++	max-width: calc(100% - 40px);
++	flex-wrap: wrap;
++}
+diff --git a/src/components/game/ParticipantMetrics/ParticipantMetrics.tsx b/src/components/game/ParticipantMetrics/ParticipantMetrics.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..1680cd9145bfbe4c479fd7a2b842dba4ea4ee1ee
+--- /dev/null
++++ b/src/components/game/ParticipantMetrics/ParticipantMetrics.tsx
+@@ -0,0 +1,29 @@
++import * as React from 'react';
++import { useAppSelector } from '../../../state/hooks';
++import { getDirectSession } from '../../../utils/DirectConnection';
++import './ParticipantMetrics.scss';
++
++interface ParticipantMetricsProps {
++	name: string;
++	showReaction?: boolean;
++	metric?: 'ping' | 'reaction';
++}
++
++export default function ParticipantMetrics({ name, showReaction = true, metric }: ParticipantMetricsProps): JSX.Element | null {
++	const values = useAppSelector(state => state.room2.directMetrics?.[name]);
++	const human = useAppSelector(state => state.room2.persons.all[name]?.isHuman);
++	const pingVisible = useAppSelector(state => state.settings.showDirectPing !== false) && metric !== 'reaction';
++	const reactionVisible = useAppSelector(state => state.settings.showDirectReaction !== false) && metric !== 'ping' && showReaction;
++	if (!getDirectSession() || !name || !human) { return null; }
++	if (!pingVisible && !reactionVisible) { return null; }
++	const format = (value: number | null | undefined, signed = false) => (
++		typeof value === 'number' && Number.isFinite(value) ? `${signed && value >= 0 ? '+' : ''}${value}` : '—'
++	);
++	return <div className={metric ? `participantMetrics participantMetrics--${metric}` : 'participantMetrics'} data-person={name}>
++		{pingVisible && <span title='Пинг: время до хоста и обратно. Обновляется каждые 2 секунды.'><b>{format(values?.PingMs)}</b></span>}
++		{reactionVisible && <span
++			title='Реакция: минус — до разрешения отвечать, плюс — после. Измеряется на устройстве игрока без сетевой задержки.'>
++			<b>{format(values?.ReactionMs, true)}</b>
++		</span>}
++	</div>;
++}
+diff --git a/src/components/game/PersonsView/PersonsView.tsx b/src/components/game/PersonsView/PersonsView.tsx
+index 7155ec8835a0b9f9e2156963e1d889b09116c869..776553caefac1552b920f6d16b2fc2def3710d3c 100644
+--- a/src/components/game/PersonsView/PersonsView.tsx
++++ b/src/components/game/PersonsView/PersonsView.tsx
+@@ -7,6 +7,7 @@ import JoinMode from '../../../client/game/JoinMode';
+ import { useAppDispatch, useAppSelector } from '../../../state/hooks';
+ import { getPin } from '../../../state/room2Slice';
+ import inviteLink from '../../../utils/inviteLink';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ import './PersonsView.css';
+ 
+@@ -66,7 +67,7 @@ export function PersonsView(): JSX.Element {
+ 				</ul>
+ 			</div>
+ 
+-			{clipboardSupported
++			{clipboardSupported && !getDirectSession()
+ 				? <div className="buttonsPanel inviteLinkHost sidePanel">
+ 					<button type="button" className='standard' onClick={() => inviteLink(appDispatch)}>{localization.inviteLink}</button>
+ 					{isHostUser ? <button type='button' className='standard' onClick={getPinCore}>{localization.getPin}</button> : null}
+diff --git a/src/components/game/PlayerView/PlayerView.scss b/src/components/game/PlayerView/PlayerView.scss
+index e0fcb3f2d5c50f29534b0404a382be5b68073747..5d44f733780e522cd6cdc9917d77f4f28e6bd9a0 100644
+--- a/src/components/game/PlayerView/PlayerView.scss
++++ b/src/components/game/PlayerView/PlayerView.scss
+@@ -202,11 +202,12 @@
+ 	position: relative;
+ }
+ 
+-.playerAvatar iframe {
++.playerAvatar iframe, .playerAvatar video {
+ 	position: absolute;
+ 	top: 0;
+ 	width: 100%;
+ 	height: 100%;
++	object-fit: contain;
+ }
+ 
+ .gamePlayer {
+@@ -393,6 +394,48 @@
+ 	font-size: 15px;
+ }
+ 
++.playerScoreRow {
++	display: flex;
++	align-items: stretch;
++	.sum { flex: 1; min-width: 0; }
++}
++
++.directParticipantCard .playerScoreRow {
++	display: grid;
++	grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
++	align-items: center;
++	margin: 0 1px;
++	padding: 0 8px;
++	background: #05061F;
++	border: 2px solid #14183E;
++	border-radius: 5px;
++
++	.sum {
++		grid-column: 2;
++		grid-row: 1;
++		margin: 0;
++	}
++
++	.staticSum {
++		background: none;
++		border: 0;
++	}
++
++	.participantMetrics--ping {
++		grid-column: 1;
++		grid-row: 1;
++		align-items: flex-start;
++		padding: 0;
++	}
++
++	.participantMetrics--reaction {
++		grid-column: 3;
++		grid-row: 1;
++		align-items: flex-end;
++		padding: 0;
++	}
++}
++
+ @media screen and (max-width: 1100px) {
+ 	.marksArea {
+ 		top: 5px;
+diff --git a/src/components/game/PlayerView/PlayerView.tsx b/src/components/game/PlayerView/PlayerView.tsx
+index 48dbed14f531324a6df9a2f1b9d4b791df4bd206..754aa9dcffd794dfbb269d37298e7f6cb1fb6e7a 100644
+--- a/src/components/game/PlayerView/PlayerView.tsx
++++ b/src/components/game/PlayerView/PlayerView.tsx
+@@ -1,3 +1,5 @@
++import { isDirectVideoAvatar } from '../../../utils/DirectAvatar';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ import * as React from 'react';
+ import PlayerInfo from '../../../client/models/PlayerInfo';
+ import AutoSizedText from '../../common/AutoSizedText/AutoSizedText';
+@@ -17,6 +19,7 @@ import { useAppDispatch, useAppSelector } from '../../../state/hooks';
+ import ScoreEditor from './ScoreEditor/ScoreEditor';
+ import { setAreSumsEditable } from '../../../state/room2Slice';
+ import PersonName from './PersonName';
++import ParticipantMetrics from '../ParticipantMetrics/ParticipantMetrics';
+ 
+ import './PlayerView.scss';
+ 
+@@ -82,7 +85,8 @@ export function PlayerView(props: PlayerViewProps): JSX.Element {
+ 		const inGameClass = player.inGame ? '' : 'out_of_game';
+ 		const selectableClass = player.canBeSelected && props.isSelectionEnabled ? 'selectable' : '';
+ 		const dimmedClass = isDimmed ? 'dimmed' : '';
+-		return `playerCard ${stateClass} ${meClass} ${inGameClass} ${selectableClass} ${dimmedClass}`.trim();
++		const directClass = getDirectSession() ? 'directParticipantCard' : '';
++		return `playerCard ${directClass} ${stateClass} ${meClass} ${inGameClass} ${selectableClass} ${dimmedClass}`.trim();
+ 	};
+ 
+ 	const onCancelSumChange = () => {
+@@ -232,10 +236,12 @@ export function PlayerView(props: PlayerViewProps): JSX.Element {
+ 					<div className="stake">{displayedStake ?? '\u200b'}</div>
+ 				</div>
+ 
+-				{props.showVideoAvatars && avatarVideo
++				{avatarVideo && (isDirectVideoAvatar(avatarVideo) || props.showVideoAvatars)
+ 					? (
+ 						<div className='playerAvatar'>
+-							<iframe title='Video avatar' src={avatarVideo} />
++							{isDirectVideoAvatar(avatarVideo)
++								? <video src={avatarVideo} autoPlay loop muted playsInline />
++								: <iframe title='Video avatar' src={avatarVideo} />}
+ 							{answerOverlay}
+ 						</div>
+ 					) : (
+@@ -267,7 +273,9 @@ export function PlayerView(props: PlayerViewProps): JSX.Element {
+ 						) : null}
+ 					</div>
+ 
+-					<div ref={sumFieldRef} className="sum" title={player.sum.toString()}>
++					<div className='playerScoreRow'>
++						<ParticipantMetrics name={player.name} metric='ping' />
++						<div ref={sumFieldRef} className="sum" title={player.sum.toString()}>
+ 						{areSumsEditable ? (
+ 							<NumericTextBox
+ 								value={player.sum}
+@@ -277,6 +285,8 @@ export function PlayerView(props: PlayerViewProps): JSX.Element {
+ 								onBlur={handleNumericTextBoxBlur}
+ 							/>
+ 						) : <AutoSizedText className='staticSum' maxFontSize={48}>{player.sum}</AutoSizedText>}
++						</div>
++						<ParticipantMetrics name={player.name} metric='reaction' />
+ 					</div>
+ 				</div>
+ 
+diff --git a/src/components/game/ShowmanReplicView/ShowmanReplicView.scss b/src/components/game/ShowmanReplicView/ShowmanReplicView.scss
+index ad40cc8513ddc24e8256aa53712e6e04b2994332..cf1bca8df047c4c5a8e9a6b032b73d0f8a9c6a9a 100644
+--- a/src/components/game/ShowmanReplicView/ShowmanReplicView.scss
++++ b/src/components/game/ShowmanReplicView/ShowmanReplicView.scss
+@@ -123,11 +123,12 @@
+     position: relative;
+ }
+ 
+-.showmanAvatar iframe {
++.showmanAvatar iframe, .showmanAvatar video {
+     position: absolute;
+     top: 0;
+     width: 100%;
+     height: 100%;
++    object-fit: contain;
+ }
+ 
+ .showmanAvatar img {
+@@ -185,6 +186,33 @@
+     color: v.$me-color;
+ }
+ 
++.directParticipantCard .showmanIdentity {
++    display: grid;
++    grid-template-columns: minmax(0, 1fr) minmax(0, 4fr) minmax(0, 1fr);
++    align-items: center;
++    flex-shrink: 0;
++    gap: 4px;
++    padding-top: 5px;
++
++    .showmanName {
++        grid-column: 2;
++        grid-row: 1;
++        min-width: 0;
++        width: auto;
++        padding-top: 0;
++    }
++
++    .participantMetrics--ping {
++        grid-column: 1;
++        grid-row: 1;
++    }
++
++    .participantMetrics--reaction {
++        grid-column: 3;
++        grid-row: 1;
++    }
++}
++
+ .showmanAvatar,
+ .showmanName {
+     width: 120px;
+@@ -267,4 +295,4 @@
+     color: v.$me-color;
+     /* Use the same color as current player name */
+     font-size: 32px;
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/game/ShowmanReplicView/ShowmanReplicView.tsx b/src/components/game/ShowmanReplicView/ShowmanReplicView.tsx
+index 73c9e3657023a1e4e9b293c45f8a316caa09226a..74cafc0baa29c3b9161c8f92087c43cd035ac77e 100644
+--- a/src/components/game/ShowmanReplicView/ShowmanReplicView.tsx
++++ b/src/components/game/ShowmanReplicView/ShowmanReplicView.tsx
+@@ -1,3 +1,5 @@
++import { isDirectVideoAvatar } from '../../../utils/DirectAvatar';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ import * as React from 'react';
+ import { connect } from 'react-redux';
+ import State from '../../../state/State';
+@@ -15,6 +17,7 @@ import Persons from '../../../client/models/Persons';
+ import EditTableMenu from '../EditTableMenu/EditTableMenu';
+ import Constants from '../../../model/enums/Constants';
+ import PersonName from '../PlayerView/PersonName';
++import ParticipantMetrics from '../ParticipantMetrics/ParticipantMetrics';
+ 
+ import './ShowmanReplicView.scss';
+ 
+@@ -95,9 +98,11 @@ export function ShowmanReplicView(props: ShowmanReplicViewProps): JSX.Element {
+ 	const isHighlighted = decisionType !== DecisionType.None && decisionType !== DecisionType.Review;
+ 	const showmanAreaClassName = `showmanArea ${isHighlighted ? 'highlighted' : ''} ${playerReplicModeClass}`;
+ 
+-	const showmanAvatarContent = props.showVideoAvatars && account?.avatarVideo ? (
++	const showmanAvatarContent = account?.avatarVideo && (isDirectVideoAvatar(account.avatarVideo) || props.showVideoAvatars) ? (
+ 		<div className='showmanAvatar'>
+-			<iframe title='Video avatar' src={account?.avatarVideo} />
++			{isDirectVideoAvatar(account.avatarVideo)
++				? <video src={account.avatarVideo} autoPlay loop muted playsInline />
++				: <iframe title='Video avatar' src={account.avatarVideo} />}
+ 			{showmanPreload}
+ 		</div>
+ 	) : (
+@@ -123,7 +128,7 @@ export function ShowmanReplicView(props: ShowmanReplicViewProps): JSX.Element {
+ 
+ 	return (
+ 		<div className={showmanAreaClassName}>
+-			<div className="showmanInfo" style={showmanInfoStyle}>
++			<div className={`showmanInfo ${getDirectSession() ? 'directParticipantCard' : ''}`} style={showmanInfoStyle}>
+ 				{isDeciding ? (
+ 					<ProgressBar
+ 						value={1 - (props.decisionTimer.value / props.decisionTimer.maximum)}
+@@ -137,10 +142,14 @@ export function ShowmanReplicView(props: ShowmanReplicViewProps): JSX.Element {
+ 					<>
+ 						{showmanAvatarContent}
+ 
+-						<div className="showmanName">
+-							<span className={meClass}>
+-								<PersonName name={account?.name ?? shownName} />
+-							</span>
++						<div className='showmanIdentity'>
++							<ParticipantMetrics name={shownName} metric='ping' />
++							<div className="showmanName">
++								<span className={meClass}>
++									<PersonName name={account?.name ?? shownName} />
++								</span>
++							</div>
++							{activePlayer && <ParticipantMetrics name={shownName} metric='reaction' />}
+ 						</div>
+ 
+ 						<div className='marksArea'>
+diff --git a/src/components/gameTable/HtmlContent/HtmlContent.tsx b/src/components/gameTable/HtmlContent/HtmlContent.tsx
+index 8b7987d5409d61f5bda5541c9d25e28d34aa621e..b4726839b1990e8cd43c6a40f4269dfa372a36b8 100644
+--- a/src/components/gameTable/HtmlContent/HtmlContent.tsx
++++ b/src/components/gameTable/HtmlContent/HtmlContent.tsx
+@@ -13,6 +13,7 @@ import {
+ import { DecisionType } from '../../../state/room2Slice';
+ import Role from '../../../client/models/Role';
+ import { getMeAsPlayer } from '../../../utils/StateHelpers';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ import './HtmlContent.css';
+ 
+@@ -197,7 +198,7 @@ export function HtmlContent(props: HtmlContentProps) {
+ 		wasAnsweringRef.current = shouldAnswer;
+ 	}, [postControlMessage, shouldAnswer]);
+ 
+-	// allow-scripts & allow-same-origin combination is safe until we serve parent and iframe content from different origins
++	// Direct mode serves packages and the browser client from one host. Give package HTML an opaque origin.
+ 	return <iframe
+ 		ref={frameRef}
+ 		aria-label='HTML content'
+@@ -216,7 +217,7 @@ export function HtmlContent(props: HtmlContentProps) {
+ 				frameRef.current?.contentWindow?.focus();
+ 			}
+ 		}}
+-		sandbox='allow-scripts allow-same-origin allow-presentation' />;
++		sandbox={getDirectSession() ? 'allow-scripts allow-presentation' : 'allow-scripts allow-same-origin allow-presentation'} />;
+ }
+ 
+ export default HtmlContent;
+diff --git a/src/components/gameTable/TableWelcome/TableWelcome.tsx b/src/components/gameTable/TableWelcome/TableWelcome.tsx
+index 4b78becbf5ecf99efd1f5f832579ae9f810b7072..24a931e48c9581223876f1de47f8747416853da5 100644
+--- a/src/components/gameTable/TableWelcome/TableWelcome.tsx
++++ b/src/components/gameTable/TableWelcome/TableWelcome.tsx
+@@ -4,6 +4,7 @@ import localization from '../../../model/resources/localization';
+ import { useAppDispatch, useAppSelector } from '../../../state/hooks';
+ import { getPin } from '../../../state/room2Slice';
+ import inviteLink from '../../../utils/inviteLink';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ import { isHost } from '../../../utils/StateHelpers';
+ import State from '../../../state/State';
+ import { connect } from 'react-redux';
+@@ -35,7 +36,7 @@ const TableWelcome: React.FC<TableWelcomeProps> = (props: TableWelcomeProps) =>
+ 			</AutoSizedText>
+ 		</div>
+ 
+-		{clipboardSupported && (roomLinkEnabled || props.isHost)
++		{!getDirectSession() && clipboardSupported && (roomLinkEnabled || props.isHost)
+ 			? <div className='table-welcome__buttons'>
+ 				{roomLinkEnabled
+ 					? <button type="button" className='standard' disabled={!isSIHostConnected} onClick={() => inviteLink(appDispatch)}>
+@@ -53,4 +54,4 @@ const TableWelcome: React.FC<TableWelcomeProps> = (props: TableWelcomeProps) =>
+ 	</div>;
+ };
+ 
+-export default connect(mapStateToProps)(TableWelcome);
+\ No newline at end of file
++export default connect(mapStateToProps)(TableWelcome);
+diff --git a/src/components/panels/AvatarView/AvatarView.tsx b/src/components/panels/AvatarView/AvatarView.tsx
+index 2c1ece629a5a5e4b1d82249ab39387365fe3f4b9..7fee438b91a140a35568ae368e046db2ad9c098c 100644
+--- a/src/components/panels/AvatarView/AvatarView.tsx
++++ b/src/components/panels/AvatarView/AvatarView.tsx
+@@ -11,6 +11,8 @@ import { useAppDispatch, useAppSelector } from '../../../state/hooks';
+ import { setAvatarKey } from '../../../state/settingsSlice';
+ import { AppDispatch } from '../../../state/store';
+ import Sex from '../../../client/models/enums/Sex';
++import { getDirectSession } from '../../../utils/DirectConnection';
++import { readDirectAvatar } from '../../../utils/DirectAvatar';
+ 
+ import './AvatarView.css';
+ 
+@@ -53,6 +55,22 @@ export function AvatarView(props: AvatarViewProps): JSX.Element {
+ 	const sex = useAppSelector(state => state.settings.sex);
+ 	const appDispatch = useAppDispatch();
+ 	const inputRef = React.useRef<HTMLInputElement>(null);
++	const direct = !!getDirectSession();
++	const [directPreview, setDirectPreview] = React.useState<string | null>(null);
++	const [directPreviewIsVideo, setDirectPreviewIsVideo] = React.useState(false);
++	React.useEffect(() => {
++		if (!direct) { return undefined; }
++		let disposed = false;
++		let url: string | null = null;
++		void readDirectAvatar().then(file => {
++			if (!disposed) {
++				url = file ? URL.createObjectURL(file) : null;
++				setDirectPreview(url);
++				setDirectPreviewIsVideo(!!file && /\.(mp4|webm)$/i.test(file.name));
++			}
++		}).catch(() => setDirectPreview(null));
++		return () => { disposed = true; if (url) { URL.revokeObjectURL(url); } };
++	}, [direct, props.avatarKey]);
+ 
+ 	function onAreaClick() {
+ 		if (props.disabled) {
+@@ -70,6 +88,10 @@ export function AvatarView(props: AvatarViewProps): JSX.Element {
+ 		if (props.disabled) {
+ 			return;
+ 		}
++		if (direct) {
++			appDispatch(actionCreators.onDirectAvatarDeleted());
++			return;
++		}
+ 
+ 		localStorage.removeItem(Constants.AVATAR_KEY);
+ 		localStorage.removeItem(Constants.AVATAR_NAME_KEY);
+@@ -81,8 +103,9 @@ export function AvatarView(props: AvatarViewProps): JSX.Element {
+ 			// eslint-disable-next-line prefer-destructuring
+ 			const targetFile = e.target.files[0];
+ 
+-			if (targetFile.size > MaxAvatarSizeMb * 1024 * 1024) {
+-				appDispatch(userErrorChanged(`${localization.fileIsTooBig} (${MaxAvatarSizeMb} MB)`));
++			const maxSize = direct ? 15 : MaxAvatarSizeMb;
++			if (targetFile.size > maxSize * 1024 * 1024) {
++				appDispatch(userErrorChanged(`${localization.fileIsTooBig} (${maxSize} MB)`));
+ 				return;
+ 			}
+ 
+@@ -92,7 +115,7 @@ export function AvatarView(props: AvatarViewProps): JSX.Element {
+ 
+ 	return (
+ 		<>
+-			{props.avatarKey ? (
++			{props.avatarKey || directPreview ? (
+ 				<FlyoutButton
+ 					disabled={props.disabled}
+ 					className={`avatarArea ${props.disabled ? 'unselectable' : ''}`}
+@@ -103,7 +126,9 @@ export function AvatarView(props: AvatarViewProps): JSX.Element {
+ 							<li onClick={onAvatarDeleted}>{localization.deleteAvatar}</li>
+ 						</ul>
+ 					}>
+-					{renderAvatar(sex)}
++					{direct ? (directPreview ? (directPreviewIsVideo
++						? <video className='avatarView' src={directPreview} autoPlay loop muted playsInline />
++						: <img className='avatarView' alt='user avatar' src={directPreview} />) : renderEmpty(sex)) : renderAvatar(sex)}
+ 				</FlyoutButton>) : (
+ 				<div className={`avatarArea ${props.disabled ? 'unselectable' : ''}`} title={localization.selectAvatar} onClick={onAreaClick}>
+ 					{renderEmpty(sex)}
+@@ -114,13 +139,14 @@ export function AvatarView(props: AvatarViewProps): JSX.Element {
+ 				ref={inputRef}
+ 				className='avatarSelector'
+ 				type="file"
+-				accept=".jpg,.jpeg,.png"
++				accept={direct ? '.jpg,.jpeg,.png,.gif,.mp4,.webm' : '.jpg,.jpeg,.png'}
+ 				aria-label='Avatar selector'
+ 				disabled={props.avatarLoadProgress}
+ 				onChange={onAvatarChanged}
+ 			/>
++			{direct && <small>PNG, JPEG, GIF, MP4, WebM — до 15 МБ</small>}
+ 		</>
+ 	);
+ }
+ 
+-export default connect(mapStateToProps, mapDispatchToProps)(AvatarView);
+\ No newline at end of file
++export default connect(mapStateToProps, mapDispatchToProps)(AvatarView);
+diff --git a/src/components/panels/GamesControlPanel/GamesControlPanel.tsx b/src/components/panels/GamesControlPanel/GamesControlPanel.tsx
+index 21232895b877ebca53db05c6caea029ea7259e5f..f1bb889c8d164a32a0c6dbbfb54482a464e77191 100644
+--- a/src/components/panels/GamesControlPanel/GamesControlPanel.tsx
++++ b/src/components/panels/GamesControlPanel/GamesControlPanel.tsx
+@@ -6,6 +6,8 @@ import GamesFilterView from '../GamesFilterView/GamesFilterView';
+ import NewGameButton from '../NewGameButton/NewGameButton';
+ import RandomGameButton from '../RandomGameButton/RandomGameButton';
+ 
++import { getDirectSession } from '../../../utils/DirectConnection';
++
+ import './GamesControlPanel.scss';
+ 
+ interface GamesControlPanelProps {
+@@ -23,8 +25,8 @@ const GamesControlPanel: React.FC<GamesControlPanelProps> = (props: GamesControl
+ 
+ 		<GamesSearch />
+ 		<GamesFilterView />
+-		<RandomGameButton />
+-		<NewGameButton />
++		{!getDirectSession() && <RandomGameButton />}
++		{(!getDirectSession() || getDirectSession()?.isHost) && <NewGameButton />}
+ 	</div>
+ );
+ 
+diff --git a/src/components/panels/LobbyBottomPanel/LobbyBottomPanel.tsx b/src/components/panels/LobbyBottomPanel/LobbyBottomPanel.tsx
+index d75d71c3e87e5c6d966cd87a46ec45c0fcf0c742..71ebd1c6cd7e3a752bd1b10964c28701daee0579 100644
+--- a/src/components/panels/LobbyBottomPanel/LobbyBottomPanel.tsx
++++ b/src/components/panels/LobbyBottomPanel/LobbyBottomPanel.tsx
+@@ -6,6 +6,8 @@ import localization from '../../../model/resources/localization';
+ import { onlineModeChanged } from '../../../state/uiSlice';
+ import RandomGameButton from '../RandomGameButton/RandomGameButton';
+ 
++import { getDirectSession } from '../../../utils/DirectConnection';
++
+ import './LobbyBottomPanel.scss';
+ 
+ const LobbyBottomPanel: React.FC = () => {
+@@ -17,12 +19,12 @@ const LobbyBottomPanel: React.FC = () => {
+ 	};
+ 
+ 	return (<div className='lobbyBottomPanel'>
+-		<RandomGameButton />
+-		<NewGameButton simple={true} />
++		{!getDirectSession() && <RandomGameButton />}
++		{(!getDirectSession() || getDirectSession()?.isHost) && <NewGameButton simple={true} />}
+ 
+-		{onlineView === OnlineMode.Games ? (
++		{!getDirectSession() && (onlineView === OnlineMode.Games ? (
+ 			<button type='button' className='standard' onClick={() => changeView(OnlineMode.Trends)}>{localization.trends}</button>
+-		) : <button type='button' className='standard' onClick={() => changeView(OnlineMode.Games)}>{localization.games}</button>}
++		) : <button type='button' className='standard' onClick={() => changeView(OnlineMode.Games)}>{localization.games}</button>)}
+ 	</div>);
+ };
+ 
+diff --git a/src/components/panels/PackageSources/PackageSources.tsx b/src/components/panels/PackageSources/PackageSources.tsx
+index 66cc1543882b74905187f2375b8843d1e0a5ac3c..8c9dcf7cc76bb24888a6adb6daef721d3faba85d 100644
+--- a/src/components/panels/PackageSources/PackageSources.tsx
++++ b/src/components/panels/PackageSources/PackageSources.tsx
+@@ -6,6 +6,8 @@ import localization from '../../../model/resources/localization';
+ import isWindowsOS from '../../../utils/isWindowsOS';
+ import Link from '../../common/Link/Link';
+ 
++import { getDirectSession } from '../../../utils/DirectConnection';
++
+ import './PackageSources.scss';
+ 
+ interface PackageSourcesProps {
+@@ -15,7 +17,7 @@ interface PackageSourcesProps {
+ 
+ export default function PackageSources(props: PackageSourcesProps): JSX.Element {
+ 	const appDispatch = useAppDispatch();
+-	const clearUrls = useAppSelector(state => state.common.clearUrls);
++	const clearUrls = useAppSelector(state => state.common.clearUrls) && !getDirectSession();
+ 	const siPackages = useAppSelector(state => state.siPackages);
+ 
+ 	const onRandomThemesSelected = () => {
+@@ -32,6 +34,7 @@ export default function PackageSources(props: PackageSourcesProps): JSX.Element
+ 		? <>
+ 			<li>
+ 				<Link
++					allowWhenUrlsHidden={!!getDirectSession()}
+ 					className='simpleLink'
+ 					href="https://vk.com/topic-135725718_53119401"
+ 					target='_blank'
+@@ -45,6 +48,7 @@ export default function PackageSources(props: PackageSourcesProps): JSX.Element
+ 		{!clearUrls && isWindowsOS()
+ 			? <li>
+ 				<Link
++					allowWhenUrlsHidden={!!getDirectSession()}
+ 					className='simpleLink'
+ 					href="https://vladimirkhil.com/si/siquester"
+ 					target='_blank'
+@@ -54,4 +58,4 @@ export default function PackageSources(props: PackageSourcesProps): JSX.Element
+ 			</li>
+ 			: null}
+ 	</ul>;
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/panels/ProfileView/ProfileView.tsx b/src/components/panels/ProfileView/ProfileView.tsx
+index 3ea14d77bf6ffc45d7e82832c4d6889b014d12a2..396d976e3010a65c363a5b18bfeb5e0eeadea213 100644
+--- a/src/components/panels/ProfileView/ProfileView.tsx
++++ b/src/components/panels/ProfileView/ProfileView.tsx
+@@ -1,3 +1,4 @@
++import { getDirectSession } from '../../../utils/DirectConnection';
+ import * as React from 'react';
+ import localization from '../../../model/resources/localization';
+ import GameInfo from '../../../model/GameInfo';
+@@ -148,7 +149,7 @@ export function ProfileView(): JSX.Element {
+ 						<h2>{localization.sex}</h2>
+ 						<SexView disabled={false} />
+ 
+-						<h2>{localization.videoAvatar}</h2>
++						{!getDirectSession() && <><h2>{localization.videoAvatar}</h2>
+ 
+ 						<div className='option'>
+ 							<label htmlFor='videoUrl'>
+@@ -185,7 +186,7 @@ export function ProfileView(): JSX.Element {
+ 									{localization.drop}
+ 								</button>
+ 							</div>
+-						</div>
++						</div></>}
+ 					</div>
+ 				) : (
+ 					<div className='profile-view__tab'>
+diff --git a/src/components/panels/RoomOptions/RoomOptions.tsx b/src/components/panels/RoomOptions/RoomOptions.tsx
+index ca31e353c225ecbd624d26aa39cb1b4c02997231..10a17d79f952a9f0960065fa2bddc8b2d300b275 100644
+--- a/src/components/panels/RoomOptions/RoomOptions.tsx
++++ b/src/components/panels/RoomOptions/RoomOptions.tsx
+@@ -21,6 +21,7 @@ import { userErrorChanged } from '../../../state/commonSlice';
+ import AutoSizedText from '../../common/AutoSizedText/AutoSizedText';
+ import AuthModeSelector from '../AuthModeSelector/AuthModeSelector';
+ import NameInput from '../NameInput/NameInput';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ import './RoomOptions.scss';
+ 
+@@ -196,7 +197,9 @@ export function RoomOptions(props: RoomOptionsProps) {
+ 					onGamePackageDataChanged={onGamePackageDataChanged} />
+ 
+ 				{game.package.type === PackageType.File
+-					? <AutoSizedText className='packageFileWarning' maxFontSize={16}>{localization.packageFileWarning}</AutoSizedText>
++					? <AutoSizedText className='packageFileWarning' maxFontSize={16}>
++						{getDirectSession() ? 'Пакет и его медиа передаются игрокам напрямую с вашего компьютера.' : localization.packageFileWarning}
++					</AutoSizedText>
+ 					: null}
+ 			</div>
+ 		</div>
+@@ -247,4 +250,4 @@ export function RoomOptions(props: RoomOptionsProps) {
+ 	</>;
+ }
+ 
+-export default RoomOptions;
+\ No newline at end of file
++export default RoomOptions;
+diff --git a/src/components/panels/SIStoragePackage/SIStoragePackage.tsx b/src/components/panels/SIStoragePackage/SIStoragePackage.tsx
+index ac8222e3e9b12df43e6e1f54308f7bfc14121d83..b57481bb4920033751c06ca29fca018b863d427d 100644
+--- a/src/components/panels/SIStoragePackage/SIStoragePackage.tsx
++++ b/src/components/panels/SIStoragePackage/SIStoragePackage.tsx
+@@ -2,6 +2,7 @@ import React from 'react';
+ import Package from 'sistorage-client/dist/models/Package';
+ import localization from '../../../model/resources/localization';
+ import SIStorageInfo from '../../../client/contracts/SIStorageInfo';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ import './SIStoragePackage.scss';
+ import defaultLogo from '../../../../assets/images/qlogo.png';
+@@ -65,7 +66,8 @@ const SIStoragePackage: React.FC<SIStoragePackageProps> = (props: SIStoragePacka
+ 	if (logoUri) {
+ 		logo = logoUri.startsWith('http') ? logoUri : props.storage.uri + logoUri;
+ 	}
+-	const content = contentUri ?? directContentUri;
++	const content = getDirectSession() && !props.storage.limitedApi
++		? `direct-library:${props.storage.id}/${id}` : contentUri ?? directContentUri;
+ 	const hasDetails = !props.storage.limitedApi && (questionCount || contentTypeStatistic || rounds);
+ 
+ 	// Make the whole card clickable except the details button
+@@ -90,7 +92,8 @@ const SIStoragePackage: React.FC<SIStoragePackageProps> = (props: SIStoragePacka
+ 			? <img
+ 				src={logo}
+ 				alt='logo'
+-				className={`storagePackageLogo${props.storage.packageProperties.includes('logoUri') && !props.storage.packageProperties.includes('logo') ? ' blurred' : ''}`}
++				className={`storagePackageLogo${props.storage.packageProperties.includes('logoUri') &&
++					!props.storage.packageProperties.includes('logo') ? ' blurred' : ''}`}
+ 			/>
+ 			: null}
+ 
+@@ -186,7 +189,9 @@ const SIStoragePackage: React.FC<SIStoragePackageProps> = (props: SIStoragePacka
+ 						<ul className='roundsList'>
+ 							{rounds.map((r, i) => <li key={i} className='roundItem'>
+ 								<span className='roundName'>{r.name}</span>
+-								<span className='roundThemes'>{(r.themeNames ?? (r as any).themes?.map((t: any) => t?.name ?? '') ?? []).join(', ')}</span>
++								<span className='roundThemes'>
++									{(r.themeNames ?? (r as any).themes?.map((t: any) => t?.name ?? '') ?? []).join(', ')}
++								</span>
+ 							</li>)}
+ 						</ul>
+ 					</div> : null}
+@@ -198,4 +203,4 @@ const SIStoragePackage: React.FC<SIStoragePackageProps> = (props: SIStoragePacka
+ 	</li>;
+ };
+ 
+-export default SIStoragePackage;
+\ No newline at end of file
++export default SIStoragePackage;
+diff --git a/src/components/panels/UserOptions/UserOptions.tsx b/src/components/panels/UserOptions/UserOptions.tsx
+index 9cee191c4e225c083f35fb0d939c13a5650a906b..a376db8a5ec2fd704ee6f1a8f65cd87aa2fbf19d 100644
+--- a/src/components/panels/UserOptions/UserOptions.tsx
++++ b/src/components/panels/UserOptions/UserOptions.tsx
+@@ -7,6 +7,8 @@ import Sex from '../../../client/models/enums/Sex';
+ 
+ import './UserOptions.css';
+ import Constants from '../../../model/enums/Constants';
++import { getDirectSession } from '../../../utils/DirectConnection';
++import { getDirectAvatarPreview } from '../../../utils/DirectAvatarPreview';
+ 
+ const UserOptions: React.FC = () => {
+ 	const login = useAppSelector(state => state.user.login);
+@@ -15,8 +17,22 @@ const UserOptions: React.FC = () => {
+ 
+ 	const dispatch = useAppDispatch();
+ 	const sex = useAppSelector(state => state.settings.sex);
++	const direct = !!getDirectSession();
++	const [preview, setPreview] = React.useState<{ key: string | null; uri: string | null } | null>(null);
++	React.useEffect(() => {
++		let disposed = false;
++		if (direct) {
++			void getDirectAvatarPreview(avatarKey).then(uri => {
++				if (!disposed) { setPreview({ key: avatarKey, uri }); }
++			});
++		}
++		return () => { disposed = true; };
++	}, [direct, avatarKey]);
+ 
+ 	const effectiveAvatar = React.useMemo(() => {
++		if (direct) {
++			return preview?.key === avatarKey ? preview.uri : null;
++		}
+ 		if (avatar) {
+ 			return avatar;
+ 		}
+@@ -27,7 +43,7 @@ const UserOptions: React.FC = () => {
+ 
+ 		const localAvatar = localStorage.getItem(Constants.AVATAR_KEY);
+ 		return localAvatar ? `data:image/png;base64, ${localAvatar}` : null;
+-	}, [avatar, avatarKey]);
++	}, [avatar, avatarKey, direct, preview]);
+ 
+ 	const avatarClass = effectiveAvatar ? null : (sex === Sex.Male ? 'avatarMale' : 'avatarFemale');
+ 
+@@ -48,4 +64,4 @@ const UserOptions: React.FC = () => {
+ 	);
+ };
+ 
+-export default UserOptions;
+\ No newline at end of file
++export default UserOptions;
+diff --git a/src/components/panels/UsersView/UsersView.tsx b/src/components/panels/UsersView/UsersView.tsx
+index 9836b673f219cb6dcf42ec2a0328c84cc07a44d8..68ef693e98a765f94b6599fba1a9fb3bfbd7c092 100644
+--- a/src/components/panels/UsersView/UsersView.tsx
++++ b/src/components/panels/UsersView/UsersView.tsx
+@@ -2,11 +2,13 @@
+ import Trends from '../Trends/Trends';
+ import { useAppSelector } from '../../../state/hooks';
+ import OnlineMode from '../../../model/enums/OnlineMode';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ import './UsersView.css';
+ 
+ export default function UsersView(): JSX.Element | null {
+ 	const onlineView = useAppSelector(state => state.ui.onlineView);
++	if (getDirectSession()) { return null; }
+ 
+ 	return <section className={`chatHost gamesblock ${onlineView === OnlineMode.Games ? 'bottom' : 'top'}`}>
+ 		<div className="chatBody">
+diff --git a/src/components/settings/CommonSettingsView/CommonSettingsView.tsx b/src/components/settings/CommonSettingsView/CommonSettingsView.tsx
+index 9658f199eddc56cb1fef7f88e909cac7c6ecc4c2..12f0bc2c7f0954529f8bfc2a604126d8ac2cdeed 100644
+--- a/src/components/settings/CommonSettingsView/CommonSettingsView.tsx
++++ b/src/components/settings/CommonSettingsView/CommonSettingsView.tsx
+@@ -9,6 +9,8 @@ import {
+ 	setFloatingControls,
+ 	setMainMenuSound,
+ 	setShowVideoAvatars,
++	setShowDirectPing,
++	setShowDirectReaction,
+ 	setSound,
+ 	setSoundVolume,
+ 	setLogPointsEvent,
+@@ -17,6 +19,7 @@ import {
+ 	setClickableAnswer
+ } from '../../../state/settingsSlice';
+ import { setExternalMediaWarning } from '../../../state/tableSlice';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ export function CommonSettingsView(): JSX.Element {
+ 	const settings = useAppSelector(state => state.settings);
+@@ -118,6 +121,20 @@ export function CommonSettingsView(): JSX.Element {
+ 				<label htmlFor="showVideoAvatars">{localization.showVideoAvatars}</label>
+ 			</div>
+ 
++			{getDirectSession() && <>
++				<p className="header">Игра по IP</p>
++				<div className="settingItem">
++					<input id="showDirectPing" type="checkbox" checked={settings.showDirectPing !== false}
++						onChange={event => appDispatch(setShowDirectPing(event.target.checked))} />
++					<label htmlFor="showDirectPing">Показывать пинг</label>
++				</div>
++				<div className="settingItem">
++					<input id="showDirectReaction" type="checkbox" checked={settings.showDirectReaction !== false}
++						onChange={event => appDispatch(setShowDirectReaction(event.target.checked))} />
++					<label htmlFor="showDirectReaction">Показывать время нажатия</label>
++				</div>
++			</>}
++
+ 			{common.logSupported
+ 				? <div className="settingItem">
+ 					<input
+diff --git a/src/components/views/Login/Login.tsx b/src/components/views/Login/Login.tsx
+index 27bf89fab4bcf9a4cad5b8b8050c5f72902d5e4c..31d934523a9c0e524fdc780d48aea680dfa70bac 100644
+--- a/src/components/views/Login/Login.tsx
++++ b/src/components/views/Login/Login.tsx
+@@ -1,4 +1,5 @@
+ import * as React from 'react';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ import { Action, Dispatch } from 'redux';
+ import { connect } from 'react-redux';
+ import Constants from '../../../model/enums/Constants';
+@@ -14,6 +15,8 @@ import { AppDispatch, RootState } from '../../../state/store';
+ import { changeLogin } from '../../../state/userSlice';
+ import { userErrorChanged } from '../../../state/commonSlice';
+ import { validateLoginName } from '../../../utils/loginValidation';
++import { navigate } from '../../../utils/Navigator';
++import Path from '../../../model/enums/Path';
+ 
+ import './Login.scss';
+ 
+@@ -105,6 +108,7 @@ export function Login(props: LoginProps) {
+ 				<div className='loginBody'>
+ 					{loginState.inProgress ? <ProgressBar isIndeterminate /> : null}
+ 					<p className='app-tagline'>{localization.appTagline}</p>
++					{getDirectSession() && <small className='directVersion'>Direct IP {MOD_VERSION}</small>}
+ 					<AvatarView disabled={loginState.inProgress} />
+ 					<SexView disabled={loginState.inProgress} />
+ 
+@@ -130,6 +134,11 @@ export function Login(props: LoginProps) {
+ 						onClick={signIn}>
+ 						{localization.enter}
+ 					</button>
++					{getDirectSession() && window.__TAURI__ && <button type='button' className='standard directBack'
++						disabled={loginState.inProgress}
++						onClick={() => appDispatch(navigate({ navigation: { path: Path.Menu }, saveState: true }))}>
++						В главное меню
++					</button>}
+ 				</div>
+ 			</div>
+ 		</div>
+diff --git a/src/components/views/MainMenu/MainMenu.tsx b/src/components/views/MainMenu/MainMenu.tsx
+index 0917536c9a8b4dfd9c3cc3a99df63d3f7fcd612c..9a0a9ea7ccda74db869a9fe397c4a65652577b3b 100644
+--- a/src/components/views/MainMenu/MainMenu.tsx
++++ b/src/components/views/MainMenu/MainMenu.tsx
+@@ -14,6 +14,11 @@ import Constants from '../../../model/enums/Constants';
+ import { serverLicenseChanged } from '../../../state/commonSlice';
+ import ProgressDialog from '../../panels/ProgressDialog/ProgressDialog';
+ 
++import { getDirectSession } from '../../../utils/DirectConnection';
++import { DirectLauncherContext, launchGame } from '../../../utils/DirectLauncher';
++import DirectConnection from '../../DirectConnection/DirectConnection';
++import { INavigationState } from '../../../state/uiSlice';
++
+ import './MainMenu.scss';
+ import twitchImg from '../../../../assets/images/twitch_logo.png';
+ import boostyImg from '../../../../assets/images/boosty_logo.png';
+@@ -23,6 +28,8 @@ import simulatorImg from '../../../../assets/images/simulator_logo.png';
+ 
+ export default function MainMenu(): JSX.Element {
+ 	const [showLicense, setShowLicense] = React.useState(false);
++	const [showDirect, setShowDirect] = React.useState(false);
++	const launcher = React.useContext(DirectLauncherContext);
+ 	const appDispatch = useAppDispatch();
+ 	const common = useAppSelector(state => state.common);
+ 	const settings = useAppSelector(state => state.settings);
+@@ -46,17 +53,32 @@ export default function MainMenu(): JSX.Element {
+ 		}
+ 	}, [common.serverLicense]);
+ 
++	const goTo = (navigation: INavigationState) => {
++		if (launcher.menuOnly) {
++			launchGame({ navigation });
++		} else {
++			appDispatch(navigate({ navigation, saveState: true }));
++		}
++	};
+ 	// setTimeout() is to forcibly load window.history before navigating
+-	const onJoinByPin = () => setTimeout(() => appDispatch(navigate({ navigation: { path: Path.JoinByPin }, saveState: true })), 0);
+-
+-	const commands = [
++	const onJoinByPin = () => setTimeout(() => goTo({ path: Path.JoinByPin }), 0);
++
++	const direct = getDirectSession();
++	const commands = direct ? [
++		{ label: 'Комнаты хоста', onClick: () => appDispatch(navigate({ navigation: { path: Path.Lobby }, saveState: true })) },
++		...(direct.isHost ? [{
++			label: 'Создать комнату',
++			onClick: () => appDispatch(navigate({ navigation: { path: Path.NewRoom, newGameMode: 'multi' }, saveState: true }))
++		}] : []),
++	] : [
+ 		{
+ 			label: localization.joinLobby,
+-			onClick: () => appDispatch(navigate({ navigation: { path: Path.Lobby }, saveState: true })),
++			onClick: () => goTo({ path: Path.Lobby }),
+ 		},
++		...(launcher.enabled ? [{ label: 'Игра по IP', onClick: () => setShowDirect(true) }] : []),
+ 		{
+ 			label: localization.singlePlay,
+-			onClick: () => appDispatch(navigate({ navigation: { path: Path.NewRoom, newGameMode: 'single' }, saveState: true })),
++			onClick: () => goTo({ path: Path.NewRoom, newGameMode: 'single' }),
+ 		},
+ 		{
+ 			label: localization.joinByPin,
+@@ -64,11 +86,11 @@ export default function MainMenu(): JSX.Element {
+ 		},
+ 		{
+ 			label: localization.howToPlay,
+-			onClick: () => appDispatch(navigate({ navigation: { path: Path.Demo }, saveState: true })),
++			onClick: () => goTo({ path: Path.Demo }),
+ 		},
+ 		{
+ 			label: localization.questionEditor,
+-			onClick: () => appDispatch(navigate({ navigation: { path: Path.SIQuester }, saveState: true })),
++			onClick: () => goTo({ path: Path.SIQuester }),
+ 		},
+ 		...(common.exitSupported
+ 			? [
+@@ -154,10 +176,11 @@ export default function MainMenu(): JSX.Element {
+ 				</h1>
+ 			</header>
+ 
+-			<div className='mainArea'>
++			<div className={showDirect ? 'mainArea directMenuArea' : 'mainArea'}>
+ 				<div className={common.minimalLogo ? 'logoMini' : 'logo'} />
+ 
+-				<div className='welcomeViewActions'>
++				{showDirect ? <DirectConnection onSelect={session => launchGame({ session })} onClose={() => setShowDirect(false)} />
++					: <div className={direct ? 'welcomeViewActions directMenu' : 'welcomeViewActions'}>
+ 					{commands.map((command, index) => (
+ 						<button
+ 							key={index}
+@@ -167,7 +190,7 @@ export default function MainMenu(): JSX.Element {
+ 							{command.label.toUpperCase()}
+ 						</button>
+ 					))}
+-				</div>
++				</div>}
+ 			</div>
+ 
+ 			{common.clearUrls ? null : <div className='links'>
+@@ -201,7 +224,7 @@ export default function MainMenu(): JSX.Element {
+ 					isIndeterminate={true} />
+ 			) : null}
+ 
+-			<div className='appVersion'>{APP_VERSION}</div>
++			<div className='appVersion'>{APP_VERSION}{(launcher.enabled || direct) && ` · Direct IP ${MOD_VERSION}`}</div>
+ 		</section>
+ 	);
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/views/NewGame/NewGame.tsx b/src/components/views/NewGame/NewGame.tsx
+index c3a3149b7b11af07d7cd59de89e39aff6f41bdfe..e5bfcec51ff862c1ba7c553c7c2747f040766878 100644
+--- a/src/components/views/NewGame/NewGame.tsx
++++ b/src/components/views/NewGame/NewGame.tsx
+@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../../../state/hooks';
+ import { navigate } from '../../../utils/Navigator';
+ import Path from '../../../model/enums/Path';
+ import localization from '../../../model/resources/localization';
++import { getDirectSession } from '../../../utils/DirectConnection';
+ 
+ import './NewGame.scss';
+ 
+@@ -28,7 +29,7 @@ export function NewGame(): JSX.Element | null {
+ 
+ 	return <NewGameDialog
+ 		isSingleGame={newGameMode === 'single'}
+-		onClose={() => canBack
++		onClose={() => !getDirectSession() && canBack
+ 			? window.history.back()
+ 			: appDispatch(navigate({ navigation: { path: Path.Menu }, saveState: true }))}
+ 		/>;
+diff --git a/src/direct-web-template.html b/src/direct-web-template.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..ed9ecbb327c8bc105cf1f08316b11677d0d2e0b0
+--- /dev/null
++++ b/src/direct-web-template.html
+@@ -0,0 +1,12 @@
++<!DOCTYPE html>
++<html lang="ru" translate="no">
++<head>
++    <meta charset="utf-8" />
++    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++    <meta name="theme-color" content="#000045" />
++    <title>SIGame — игра с друзьями</title>
++</head>
++<body>
++    <div id="reactHost"></div>
++</body>
++</html>
+diff --git a/src/host/SteamTauriHost.ts b/src/host/SteamTauriHost.ts
+index 9a0578dc3d548e4bb575cf490029c62c53135af3..68b3a7044a9e4f4b930ae852ef4cb4a2b65551db 100644
+--- a/src/host/SteamTauriHost.ts
++++ b/src/host/SteamTauriHost.ts
+@@ -16,6 +16,10 @@ import { AccountServiceClient } from 'accountservice-client';
+ const defaultSteamAuthIdentity = 'SIGameServer';
+ 
+ export default class SteamTauriHost extends TauriHost {
++	constructor(isLegacy: boolean, private directMode = false) {
++		super(isLegacy, !directMode);
++	}
++
+ 	private readonly accountServiceClient = new AccountServiceClient('https://vladimirkhil.com/account');
+ 
+ 	private async loginBySteamAsync(): Promise<{ userId: string; username: string; token: string | null }> {
+@@ -77,6 +81,8 @@ export default class SteamTauriHost extends TauriHost {
+ 			console.error('Failed to get Steam user info:', error);
+ 		}
+ 
++		if (this.directMode) { return; }
++
+ 		setTimeout(async () => {
+ 			try {
+ 				const { userId, username, token } = await this.loginBySteamAsync();
+@@ -100,7 +106,7 @@ export default class SteamTauriHost extends TauriHost {
+ 	}
+ 
+ 	getAuthToken(): string | null {
+-		return this.accountServiceClient.getBearerToken() ?? null;
++		return this.directMode ? null : this.accountServiceClient.getBearerToken() ?? null;
+ 	}
+ 
+ 	async setFullScreen(fullScreen: boolean): Promise<boolean> {
+diff --git a/src/host/TauriHost.ts b/src/host/TauriHost.ts
+index e7bdce25cd9102e4117a9e308461b14618dffd97..8301b5395b2d00589e65f8617fa764a93c16f4ae 100644
+--- a/src/host/TauriHost.ts
++++ b/src/host/TauriHost.ts
+@@ -80,8 +80,8 @@ export default class TauriHost implements IHost {
+ 
+ 	private currentLogFilePath: string | null = null;
+ 
+-	constructor(private isLegacy: boolean) {
+-		if (this.app && this.app.http) {
++	constructor(private isLegacy: boolean, useNativeHttp = true) {
++		if (useNativeHttp && this.app && this.app.http) {
+ 			const originalFetch = globalThis.fetch.bind(globalThis);
+ 			const { fetch } = this.app.http;
+ 
+@@ -496,4 +496,4 @@ export default class TauriHost implements IHost {
+ 			console.warn('Rich Presence is not supported by the host:', error);
+ 		});
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/logic/ClientController.ts b/src/logic/ClientController.ts
+index e902be0f32f1a28750d155d4a2fc95e0c5f3664c..567762a84b5322d545eb15a24517e3aca10383d2 100644
+--- a/src/logic/ClientController.ts
++++ b/src/logic/ClientController.ts
+@@ -1,3 +1,5 @@
++import { getDirectSession } from '../utils/DirectConnection';
++import { isDirectVideoAvatar } from '../utils/DirectAvatar';
+ import { AnyAction, Dispatch } from 'redux';
+ import State from '../state/State';
+ import DataContext from '../model/DataContext';
+@@ -292,7 +294,7 @@ export default class ClientController implements IClientController {
+ 				: this.dataContext.serverUri
+ 		);
+ 
+-		if (typeof location !== 'undefined' && location.protocol === 'https:') {
++		if (!this.dataContext.config?.directMode && typeof location !== 'undefined' && location.protocol === 'https:') {
+ 			return result.replace('http://', 'https://');
+ 		}
+ 
+@@ -618,6 +620,12 @@ export default class ClientController implements IClientController {
+ 	}
+ 
+ 	onAvatarChanged(personName: string, contentType: string, uri: string) {
++		if (getDirectSession() && contentType === 'image') {
++			const video = isDirectVideoAvatar(uri);
++			this.appDispatch(personAvatarChanged({ personName, avatarUri: video ? '' : uri }));
++			this.appDispatch(personAvatarVideoChanged({ personName, avatarUri: video ? uri : '' }));
++			return;
++		}
+ 		switch (contentType) {
+ 			case 'image':
+ 				this.appDispatch(personAvatarChanged({ personName, avatarUri: uri }));
+diff --git a/src/logic/DirectAvatar.ts b/src/logic/DirectAvatar.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..eca055633f331ed1bc4b62a595c57291303c8842
+--- /dev/null
++++ b/src/logic/DirectAvatar.ts
+@@ -0,0 +1,21 @@
++import { AppDispatch } from '../state/store';
++import { avatarLoadEnd, avatarLoadError, avatarLoadStart, userErrorChanged } from '../state/commonSlice';
++import { changeAvatar } from '../state/userSlice';
++import { setAvatarKey } from '../state/settingsSlice';
++import getErrorMessage from '../utils/ErrorHelpers';
++import { readDirectAvatar, uploadDirectAvatar } from '../utils/DirectAvatar';
++
++export async function uploadSavedDirectAvatar(dispatch: AppDispatch, serverUri: string): Promise<void> {
++	dispatch(avatarLoadStart());
++	try {
++		const file = await readDirectAvatar();
++		const uri = file ? await uploadDirectAvatar(serverUri, file.name, file) : '';
++		dispatch(changeAvatar(uri));
++		dispatch(setAvatarKey(uri));
++		dispatch(avatarLoadEnd());
++	} catch (error) {
++		const message = getErrorMessage(error);
++		dispatch(avatarLoadError(message));
++		dispatch(userErrorChanged('Не удалось передать аватарку хосту: ' + message));
++	}
++}
+diff --git a/src/logic/ServerInitializer.ts b/src/logic/ServerInitializer.ts
+index 6b7f5f9a1ca440277aae6ad0bde797a7694c7cad..aed26457d5727f92a7271aef2ac0d645ade52394 100644
+--- a/src/logic/ServerInitializer.ts
++++ b/src/logic/ServerInitializer.ts
+@@ -20,6 +20,8 @@ import getErrorMessage from '../utils/ErrorHelpers';
+ import { changeAvatar } from '../state/userSlice';
+ import WellKnownSIContentServiceErrorCode from 'sicontent-client/dist/models/WellKnownSIContentServiceErrorCode';
+ import localization from '../model/resources/localization';
++import { uploadSavedDirectAvatar } from './DirectAvatar';
++import { directLibraryStorages } from '../utils/DirectLibraries';
+ 
+ function createStorageClientFromInfo(storageInfo: SIStorageInfo): SIStorageClient {
+ 	return new SIStorageClient({
+@@ -28,6 +30,10 @@ function createStorageClientFromInfo(storageInfo: SIStorageInfo): SIStorageClien
+ }
+ 
+ async function uploadAvatarAsync(appDispatch: AppDispatch, dataContext: DataContext) {
++	if (dataContext.config.directMode) {
++		await uploadSavedDirectAvatar(appDispatch, dataContext.serverUri);
++		return;
++	}
+ 	if (typeof localStorage === 'undefined') {
+ 		return;
+ 	}
+@@ -104,7 +110,7 @@ async function loadHostInfoAsync(appDispatch: AppDispatch, dataContext: DataCont
+ 		dataContext.contentClients = contentInfos.map(info => new SIContentClient({
+ 			serviceUri: info.serviceUri,
+ 		}));
+-	} else {
++	} else if (!dataContext.config.directMode) {
+ 		throw new Error('No SIContent service found');
+ 	}
+ 
+@@ -125,7 +131,9 @@ async function loadHostInfoAsync(appDispatch: AppDispatch, dataContext: DataCont
+ }
+ 
+ async function initializeStoragesAsync(appDispatch: AppDispatch, dataContext: DataContext, serverStorageInfos: SIStorageInfo[]) {
+-	const storageInfos = [...serverStorageInfos];
++	const storageInfos = dataContext.config.directMode
++		? directLibraryStorages(dataContext.serverUri, localization.getLanguage().startsWith('ru'))
++		: [...serverStorageInfos];
+ 
+ 	const storageClients = storageInfos.map(createStorageClientFromInfo);
+ 
+diff --git a/src/logic/actionCreators.ts b/src/logic/actionCreators.ts
+index 06aa9485d45ba1ac2cd13378c294f25bf1c6e3c8..a0f84ff8915ab1829b46274d39837ab26cde4af1 100644
+--- a/src/logic/actionCreators.ts
++++ b/src/logic/actionCreators.ts
+@@ -45,8 +45,14 @@ import { navigate } from '../utils/Navigator';
+ import SIHostListener from '../utils/SIHostListener';
+ import { ensureServerInfoLoadedAsync } from './ServerInitializer';
+ import AuthorizationMode from '../client/contracts/AuthorizationMode';
++import { uploadSavedDirectAvatar } from './DirectAvatar';
++import { saveDirectAvatar } from '../utils/DirectAvatar';
+ 
+ async function uploadAvatarAsync(appDispatch: AppDispatch, dataContext: DataContext) {
++	if (dataContext.config.directMode) {
++		await uploadSavedDirectAvatar(appDispatch, dataContext.serverUri);
++		return;
++	}
+ 	if (typeof localStorage === 'undefined') {
+ 		return;
+ 	}
+@@ -99,14 +105,17 @@ async function uploadAvatarAsync(appDispatch: AppDispatch, dataContext: DataCont
+ const onAvatarSelectedLocal: ActionCreator<ThunkAction<void, State, DataContext, Action>> =
+ 	(avatar: File, appDispatch: AppDispatch) => async (_dispatch: Dispatch<AnyAction>, getState: () => State, dataContext: DataContext) => {
+ 		try {
+-			const buffer = await avatar.arrayBuffer();
+-			const base64 = window.btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
++			if (dataContext.config.directMode) {
++				await saveDirectAvatar(avatar);
++			} else {
++				const buffer = await avatar.arrayBuffer();
++				const base64 = window.btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
++				localStorage.setItem(Constants.AVATAR_KEY, base64);
++				localStorage.setItem(Constants.AVATAR_NAME_KEY, avatar.name);
++			}
+ 
+ 			const key = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
+ 
+-			localStorage.setItem(Constants.AVATAR_KEY, base64);
+-			localStorage.setItem(Constants.AVATAR_NAME_KEY, avatar.name);
+-
+ 			appDispatch(setAvatarKey(key));
+ 			await uploadAvatarAsync(appDispatch, dataContext);
+ 
+@@ -120,6 +129,20 @@ const onAvatarSelectedLocal: ActionCreator<ThunkAction<void, State, DataContext,
+ 		}
+ 	};
+ 
++const onDirectAvatarDeleted: ActionCreator<ThunkAction<void, State, DataContext, Action>> =
++	() => async (dispatch, getState, dataContext) => {
++		try {
++			await saveDirectAvatar(null);
++			localStorage.removeItem(Constants.AVATAR_KEY);
++			localStorage.removeItem(Constants.AVATAR_NAME_KEY);
++			dispatch(setAvatarKey(''));
++			dispatch(changeAvatar(''));
++			if (getState().ui.navigation.path === Path.Room) {
++				await dataContext.game.sendImageAvatar('');
++			}
++		} catch (error) { dispatch(userErrorChanged(getErrorMessage(error))); }
++	};
++
+ const reloadComputerAccounts: ActionCreator<ThunkAction<void, State, DataContext, Action>> =
+ 	(appDispatch: AppDispatch) => async (_dispatch: Dispatch<Action>, getState: () => State, dataContext: DataContext) => {
+ 		const state = getState();
+@@ -148,6 +171,7 @@ const connectToSIHostAsync = async (
+ 	dataContext: DataContext,
+ ): Promise<ISIHostClient> => {
+ 	await dataContext.game.leaveGame();
++	if (dataContext.config.directMode) { siHostUri = dataContext.serverUri; }
+ 	const state = getState();
+ 	const { useProxy2 } = state.settings;
+ 
+@@ -160,7 +184,7 @@ const connectToSIHostAsync = async (
+ 	const listener = new SIHostListener(controller, appDispatch);
+ 
+ 	const authToken = dataContext.host.getAuthToken() ?? undefined;
+-	let siHostClient = new SIHostClient();
++	let siHostClient = new SIHostClient(!!dataContext.config.directMode);
+ 	try {
+ 		await siHostClient.connectAsync(uriChecked, listener, authToken);
+ 		appDispatch(isSIHostConnectedChanged({ isConnected: true, reason: '' }));
+@@ -170,7 +194,7 @@ const connectToSIHostAsync = async (
+ 			const fallbackUri = siHostUri.endsWith('/') ? siHostUri : siHostUri + '/';
+ 			await siHostClient.disconnectAsync(); // ensure old loops are dead
+ 
+-			siHostClient = new SIHostClient();
++			siHostClient = new SIHostClient(!!dataContext.config.directMode);
+ 			await siHostClient.connectAsync(fallbackUri, listener, authToken);
+ 			appDispatch(isSIHostConnectedChanged({ isConnected: true, reason: '' }));
+ 		} else if (siHostUri === dataContext.proxyUri) {
+@@ -178,7 +202,7 @@ const connectToSIHostAsync = async (
+ 			const fallbackUri = dataContext.serverUri;
+ 			await siHostClient.disconnectAsync();
+ 
+-			siHostClient = new SIHostClient();
++			siHostClient = new SIHostClient(!!dataContext.config.directMode);
+ 			await siHostClient.connectAsync(fallbackUri, listener, authToken);
+ 			appDispatch(isSIHostConnectedChanged({ isConnected: true, reason: '' }));
+ 		} else {
+@@ -381,6 +405,7 @@ const actionCreators = {
+ 	initStageSkipLoginLicenseAsync,
+ 	reloadComputerAccounts,
+ 	onAvatarSelectedLocal,
++	onDirectAvatarDeleted,
+ 	login,
+ 	connectToSIHostAsync,
+ 	acceptLicense,
+diff --git a/src/logic/contentPreloader.ts b/src/logic/contentPreloader.ts
+index dffe0cde8caac0cb7017dd166e842faca3c98ef3..4e705af8aa54f5c9c55f54f974c7ae6d7fd13f19 100644
+--- a/src/logic/contentPreloader.ts
++++ b/src/logic/contentPreloader.ts
+@@ -4,6 +4,7 @@ import { analytics } from '../utils/Analytics';
+ import getErrorMessage, { getHttpErrorDetails } from '../utils/ErrorHelpers';
+ import localization from '../model/resources/localization';
+ import { logEvent } from 'firebase/analytics';
++import { getDirectSession } from '../utils/DirectConnection';
+ 
+ const BASE_DELAY = 500; // Base delay between requests
+ const MAX_RETRIES = 3;
+@@ -295,7 +296,8 @@ export async function preloadRoundContent(
+ 		}
+ 
+ 		// Add delay between requests (except for first processed request)
+-		if (i > 0) {
++		// The direct host serves its own files; keep sequential loading without the public-service throttle.
++		if (i > 0 && !getDirectSession()) {
+ 			// eslint-disable-next-line no-await-in-loop
+ 			await delay(BASE_DELAY);
+ 		}
+diff --git a/src/state/online/onlineActionCreators.ts b/src/state/online/onlineActionCreators.ts
+index 500dd1314745980f52a703e16189182896df3c78..b1052de7fee87a74bc776e3b131cfe2b9a79a573 100644
+--- a/src/state/online/onlineActionCreators.ts
++++ b/src/state/online/onlineActionCreators.ts
+@@ -67,6 +67,7 @@ import {
+ import WellKnownSIStorageServiceErrorCode from 'sistorage-client/dist/models/WellKnownSIStorageServiceErrorCode';
+ import { initRoom } from '../serverActions';
+ import AuthorizationMode from '../../client/contracts/AuthorizationMode';
++import { importDirectLibraryPackage } from '../../utils/DirectLibraries';
+ 
+ async function uploadPackageAsync2(
+ 	contentClient: SIContentClient,
+@@ -161,6 +162,7 @@ const joinGame: ActionCreator<ThunkAction<void, State, DataContext, Action>> =
+ 		appDispatch: AppDispatch,
+ 		isAutomatic: boolean,
+ 		authorizationMode: AuthorizationMode = AuthorizationMode.None,
++		hostToken?: string,
+ 	) => async (
+ 		dispatch: Dispatch<any>,
+ 		getState: () => State,
+@@ -205,6 +207,7 @@ const joinGame: ActionCreator<ThunkAction<void, State, DataContext, Action>> =
+ 				Password: state.online2.password,
+ 				Pin: pin,
+ 				AuthorizationMode: authorizationMode,
++				HostToken: hostToken,
+ 			});
+ 
+ 			if (result !== JoinGame2Result.Success) {
+@@ -394,6 +397,39 @@ function selectContentClientBySharding(contentClients: SIContentClient[], packag
+ }
+ 
+ async function getPackageInfoAsync(state: State, game: GameState, dataContext: DataContext, dispatch: AppDispatch): Promise<PackageInfo> {
++	if (dataContext.config.directMode) {
++		if (game.package.type === PackageType.Random || game.package.type === PackageType.SIStorage) {
++			dispatch(downloadPackageStarted());
++			try {
++				return await importDirectLibraryPackage(dataContext.serverUri, game.package, getFullCulture(state));
++			} finally {
++				dispatch(downloadPackageFinished());
++			}
++		}
++		let file = game.package.type === PackageType.File ? game.package.data : null;
++		if (game.package.type === PackageType.HostManaged && game.package.id) {
++			dispatch(downloadPackageStarted());
++			try {
++				const packageData = await dataContext.host.getPackageData(game.package.id);
++				file = packageData?.[0] ?? null;
++			} finally {
++				dispatch(downloadPackageFinished());
++			}
++		}
++		if (!file) {
++			throw new Error('Выберите файл .siq или установленный пакет из мастерской Steam.');
++		}
++		const form = new FormData();
++		form.append('file', file, file.name);
++		dispatch(uploadPackageStarted());
++		try {
++			const response = await fetch(`${dataContext.serverUri}/direct/packages`, { method: 'POST', body: form });
++			if (!response.ok) { throw new Error(await response.text()); }
++			return await response.json() as PackageInfo;
++		} finally {
++			dispatch(uploadPackageFinished());
++		}
++	}
+ 	switch (game.package.type) {
+ 		case PackageType.File:
+ 			if (!game.package.data) {
+@@ -611,7 +647,9 @@ const createNewGame: ActionCreator<ThunkAction<void, State, DataContext, Action>
+ 				appDispatch(userErrorChanged(GameErrorsHelper.getMessage(result.errorType)));
+ 			} else {
+ 				appDispatch(passwordChanged(gameSettings.networkGamePassword));
+-				dispatch(joinGame(result.hostUri, result.gameId, effectiveUserName, role, null, appDispatch, false, authorizationMode));
++				dispatch(joinGame(
++					result.hostUri, result.gameId, effectiveUserName, role, null, appDispatch, false, authorizationMode, result.hostToken
++				));
+ 			}
+ 		} catch (error) {
+ 			const userError = getErrorMessage(error);
+@@ -658,4 +696,4 @@ const onlineActionCreators = {
+ 	initGameAsync,
+ };
+ 
+-export default onlineActionCreators;
+\ No newline at end of file
++export default onlineActionCreators;
+diff --git a/src/state/online2Slice.ts b/src/state/online2Slice.ts
+index 239647177482a1edfb08c7b1314f7d041a72aa1a..a8d68bf9d4c367f4a4416cc57821a8e666882ccb 100644
+--- a/src/state/online2Slice.ts
++++ b/src/state/online2Slice.ts
+@@ -98,6 +98,7 @@ function getPackageKey(info: PackageInfo): string {
+ }
+ 
+ async function loadStatisticsAsync(dispatch: AppDispatch, dataContext: DataContext) {
++	if (dataContext.config.directMode) { return; }
+ 	const siStatisticsClient = new SIStatisticsClient({ serviceUri: dataContext.config.siStatisticsServiceUri });
+ 
+ 	const now = new Date();
+diff --git a/src/state/room2Slice.ts b/src/state/room2Slice.ts
+index 047a995e8c0ad7e5dce76ca75ca43767db13a47f..9b6216d745dd7f91c8c4b5ebcd42abcedc363215 100644
+--- a/src/state/room2Slice.ts
++++ b/src/state/room2Slice.ts
+@@ -21,6 +21,7 @@ import TimerStates from '../model/enums/TimeStates';
+ import { stopAudio, userErrorChanged } from './commonSlice';
+ import { clearGameLog } from './globalActions';
+ import StakeTypes from '../client/models/enums/StakeTypes';
++import DirectPlayerMetrics from '../client/contracts/DirectPlayerMetrics';
+ 
+ export enum DialogView {
+ 	None,
+@@ -58,6 +59,7 @@ let answerLock: number | null = null;
+ let timerRef: number | null = null;
+ 
+ export interface Room2State {
++	directMetrics?: Record<string, DirectPlayerMetrics>;
+ 	persons: {
+ 		showman: PersonInfo;
+ 		players: PlayerInfo[];
+@@ -448,6 +450,9 @@ export const room2Slice = createSlice({
+ 	name: 'room2',
+ 	initialState,
+ 	reducers: {
++		setDirectMetrics: (state, action: PayloadAction<DirectPlayerMetrics[]>) => {
++			state.directMetrics = Object.fromEntries(action.payload.map(player => [player.Name, player]));
++		},
+ 		showDialog: (state: Room2State, action: PayloadAction<DialogView>) => {
+ 			state.dialogView = action.payload;
+ 		},
+@@ -1436,6 +1441,7 @@ export const {
+ 	setDemoButtonHighlights,
+ 	resetDemoButtonHighlights,
+ 	playerCountChanged,
++	setDirectMetrics,
+ } = room2Slice.actions;
+ 
+-export default room2Slice.reducer;
+\ No newline at end of file
++export default room2Slice.reducer;
+diff --git a/src/state/settingsSlice.ts b/src/state/settingsSlice.ts
+index af5216c96026633c0366af76df8249028ea83e02..4e4f2348b619e703cc4ed8760cc571c870d67099 100644
+--- a/src/state/settingsSlice.ts
++++ b/src/state/settingsSlice.ts
+@@ -26,6 +26,8 @@ export interface SettingsState {
+ 	censorButtonKey: string | null;
+ 	attachContentToTable: boolean;
+ 	showVideoAvatars: boolean;
++	showDirectPing: boolean;
++	showDirectReaction: boolean;
+ 	theme: ThemeSettings;
+ 	writeGameLog: boolean;
+ 	logPointsEvent: boolean;
+@@ -54,6 +56,8 @@ const initialState: SettingsState = {
+ 	censorButtonKey: 'F8',
+ 	attachContentToTable: true,
+ 	showVideoAvatars: true,
++	showDirectPing: true,
++	showDirectReaction: true,
+ 	theme: {
+ 		table: {
+ 			textColor: '#FFFFFF',
+@@ -178,6 +182,12 @@ export const settingsSlice = createSlice({
+ 		setShowVideoAvatars: (state: SettingsState, action: PayloadAction<boolean>) => {
+ 			state.showVideoAvatars = action.payload;
+ 		},
++		setShowDirectPing: (state: SettingsState, action: PayloadAction<boolean>) => {
++			state.showDirectPing = action.payload;
++		},
++		setShowDirectReaction: (state: SettingsState, action: PayloadAction<boolean>) => {
++			state.showDirectReaction = action.payload;
++		},
+ 		setDisplayAnswerOptionsOneByOne: (state: SettingsState, action: PayloadAction<boolean>) => {
+ 			state.appSettings.displayAnswerOptionsOneByOne = action.payload;
+ 		},
+@@ -253,6 +263,8 @@ export const settingsSlice = createSlice({
+ 			state.avatarKey = initialState.avatarKey;
+ 			state.attachContentToTable = initialState.attachContentToTable;
+ 			state.showVideoAvatars = initialState.showVideoAvatars;
++			state.showDirectPing = initialState.showDirectPing;
++			state.showDirectReaction = initialState.showDirectReaction;
+ 			state.writeGameLog = initialState.writeGameLog;
+ 			state.logPointsEvent = initialState.logPointsEvent;
+ 			state.useProxy2 = initialState.useProxy2;
+@@ -321,6 +333,8 @@ export const {
+ 	setFullScreen,
+ 	setAttachContentToTable,
+ 	setShowVideoAvatars,
++	setShowDirectPing,
++	setShowDirectReaction,
+ 	setDisplayAnswerOptionsOneByOne,
+ 	setDisplayAnswerOptionsLabels,
+ 	setNextButtonKey,
+diff --git a/src/state/siPackagesSlice.ts b/src/state/siPackagesSlice.ts
+index 1ec093f09fc8c2bb00b6d7b0deb948b61f8df2a1..e73d9b752d7bf39047b7a5ee3e734ac1f32e6f1a 100644
+--- a/src/state/siPackagesSlice.ts
++++ b/src/state/siPackagesSlice.ts
+@@ -1,4 +1,4 @@
+-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
++import { createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
+ import PackagesPage from 'sistorage-client/dist/models/PackagesPage';
+ import Restriction from 'sistorage-client/dist/models/Restriction';
+ import Tag from 'sistorage-client/dist/models/Tag';
+@@ -13,6 +13,7 @@ import StorageFilter from '../client/contracts/StorageFilter';
+ import { userWarnChanged } from './commonSlice';
+ 
+ export interface SIPackagesState {
++	pendingRequests: Record<string, string>;
+ 	storages: SIStorageInfo[];
+ 	storageIndex: number;
+ 	filter: StorageFilter;
+@@ -28,6 +29,7 @@ export interface SIPackagesState {
+ }
+ 
+ const initialState: SIPackagesState = {
++	pendingRequests: {},
+ 	storages: [],
+ 	storageIndex: 0,
+ 	filter: {
+@@ -249,47 +251,57 @@ export const siPackagesSlice = createSlice({
+ 			state.storages = action.payload;
+ 		},
+ 		setStorageIndex: (state, action) => {
+-			state.storageIndex = action.payload;
++			if (state.storageIndex !== action.payload) {
++				return { ...initialState, storages: state.storages, storageIndex: action.payload };
++			}
+ 		},
+ 	},
+ 	extraReducers: (builder) => {
+ 		builder.addCase(receiveFilters.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveFilters'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.filter = action.payload;
+ 			}
+ 		});
+ 
+ 		builder.addCase(receiveAuthors.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveAuthors'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.authors = arrayToValue(action.payload, author => author.id, author => author.name);
+ 			}
+ 		});
+ 
+ 		builder.addCase(receiveAuthors.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveAuthors'] !== action.meta.requestId) return;
+ 			state.error = getErrorMessage(action.error.message);
+ 		});
+ 
+ 		builder.addCase(receiveTags.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveTags'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.tags = arrayToValue(action.payload, tag => tag.id, tag => tag.name);
+ 			}
+ 		});
+ 
+ 		builder.addCase(receiveTags.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveTags'] !== action.meta.requestId) return;
+ 			state.error = getErrorMessage(action.error.message);
+ 		});
+ 
+ 		builder.addCase(receivePublishers.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/receivePublishers'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.publishers = arrayToValue(action.payload, publisher => publisher.id, publisher => publisher.name);
+ 			}
+ 		});
+ 
+ 		builder.addCase(receivePublishers.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/receivePublishers'] !== action.meta.requestId) return;
+ 			state.error = getErrorMessage(action.error.message);
+ 		});
+ 
+ 		builder.addCase(receiveLanguages.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveLanguages'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.languages = arrayToValue(action.payload.languages, language => language.id, language => language.code);
+ 
+@@ -302,16 +314,19 @@ export const siPackagesSlice = createSlice({
+ 		});
+ 
+ 		builder.addCase(receiveLanguages.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveLanguages'] !== action.meta.requestId) return;
+ 			state.error = getErrorMessage(action.error.message);
+ 		});
+ 
+ 		builder.addCase(receiveRestrictions.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveRestrictions'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.restrictions = arrayToRecord(action.payload, r => r.id);
+ 			}
+ 		});
+ 
+ 		builder.addCase(receiveRestrictions.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/receiveRestrictions'] !== action.meta.requestId) return;
+ 			state.error = getErrorMessage(action.error.message);
+ 		});
+ 
+@@ -325,6 +340,7 @@ export const siPackagesSlice = createSlice({
+ 		});
+ 
+ 		builder.addCase(searchPackages.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/searchPackages'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.packages = action.payload;
+ 			}
+@@ -333,6 +349,7 @@ export const siPackagesSlice = createSlice({
+ 		});
+ 
+ 		builder.addCase(searchPackagesByValueFilters.fulfilled, (state, action) => {
++			if (state.pendingRequests['siPackages/searchPackagesByValueFilters'] !== action.meta.requestId) return;
+ 			if (action.payload) {
+ 				state.packages = action.payload;
+ 			}
+@@ -340,14 +357,23 @@ export const siPackagesSlice = createSlice({
+ 			state.isLoading = false;
+ 		});
+ 
+-		builder.addCase(searchPackages.rejected, (state) => {
++		builder.addCase(searchPackages.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/searchPackages'] !== action.meta.requestId) return;
+ 			state.isLoading = false;
+ 		});
+ 
+ 		builder.addCase(searchPackagesByValueFilters.rejected, (state, action) => {
++			if (state.pendingRequests['siPackages/searchPackagesByValueFilters'] !== action.meta.requestId) return;
+ 			state.isLoading = false;
+ 			state.error = getErrorMessage(action.error.message);
+ 		});
++		// A response from the previous catalogue must never be rendered under the new catalogue's name.
++		builder.addMatcher(isAnyOf(
++			receiveFilters.pending, receiveAuthors.pending, receiveTags.pending, receivePublishers.pending,
++			receiveLanguages.pending, receiveRestrictions.pending, searchPackages.pending, searchPackagesByValueFilters.pending,
++		), (state, action) => {
++			state.pendingRequests[action.type.slice(0, -'/pending'.length)] = action.meta.requestId;
++		});
+ 	},
+ });
+ 
+@@ -356,4 +382,4 @@ export const {
+ 	setStorageIndex,
+ } = siPackagesSlice.actions;
+ 
+-export default siPackagesSlice.reducer;
+\ No newline at end of file
++export default siPackagesSlice.reducer;
+diff --git a/src/typings/globals.d.ts b/src/typings/globals.d.ts
+index bbe913adb3511a0ee7a4a48f8a0214e428626366..ba062438a90399a98df1d8d3bb55a47c8793c348 100644
+--- a/src/typings/globals.d.ts
++++ b/src/typings/globals.d.ts
+@@ -1 +1,2 @@
+ declare const APP_VERSION: string;
++declare const MOD_VERSION: string;
+diff --git a/src/utils/DirectAvatar.ts b/src/utils/DirectAvatar.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..26fe7fbb8bef9544450414a9fbec9dc500534e7c
+--- /dev/null
++++ b/src/utils/DirectAvatar.ts
+@@ -0,0 +1,61 @@
++import Constants from '../model/enums/Constants';
++import { getDirectSession } from './DirectConnection';
++
++export function isDirectVideoAvatar(uri: string): boolean {
++	return !!getDirectSession() && /\/direct\/avatars\/[a-f0-9]{64}\.(mp4|webm)$/.test(uri);
++}
++
++async function openAvatarDatabase(): Promise<IDBDatabase> {
++	return new Promise((resolve, reject) => {
++		const request = indexedDB.open('SIGame.DirectIP', 1);
++		request.onupgradeneeded = () => request.result.createObjectStore('avatars');
++		request.onsuccess = () => resolve(request.result);
++		request.onerror = () => reject(request.error);
++	});
++}
++
++/** Blob storage avoids localStorage's small string quota and base64 copies. */
++export async function saveDirectAvatar(file: File | null): Promise<void> {
++	const database = await openAvatarDatabase();
++	try {
++		await new Promise<void>((resolve, reject) => {
++			const transaction = database.transaction('avatars', 'readwrite');
++			const store = transaction.objectStore('avatars');
++			if (file) { store.put(file, 'selected'); } else { store.delete('selected'); }
++			transaction.oncomplete = () => resolve();
++			transaction.onabort = () => reject(transaction.error);
++			transaction.onerror = () => reject(transaction.error);
++		});
++	} finally { database.close(); }
++}
++
++export async function readDirectAvatar(): Promise<File | null> {
++	const database = await openAvatarDatabase();
++	try {
++		const file = await new Promise<File | undefined>((resolve, reject) => {
++			const request = database.transaction('avatars').objectStore('avatars').get('selected');
++			request.onsuccess = () => resolve(request.result);
++			request.onerror = () => reject(request.error);
++		});
++		if (file) { return file; }
++	} finally { database.close(); }
++	const base64 = localStorage.getItem(Constants.AVATAR_KEY);
++	const name = localStorage.getItem(Constants.AVATAR_NAME_KEY);
++	if (!base64 || !name) { return null; }
++	return new File([Uint8Array.from(window.atob(base64), char => char.charCodeAt(0))], name);
++}
++
++/** Upload a selected avatar only to the current direct host. */
++export async function uploadDirectAvatar(serverUri: string, fileName: string, data: Blob): Promise<string> {
++	const form = new FormData();
++	form.append('file', data, fileName);
++	const response = await fetch(`${serverUri}/direct/avatars`, { method: 'POST', body: form });
++	const result = await response.json();
++	if (!response.ok) {
++		throw new Error(result.error || 'Не удалось загрузить аватарку на хост.');
++	}
++	if (typeof result.uri !== 'string' || !/^\/direct\/avatars\/[a-f0-9]{64}\.(png|jpg|gif|mp4|webm)$/.test(result.uri)) {
++		throw new Error('Хост вернул некорректный адрес аватарки.');
++	}
++	return new URL(result.uri, serverUri).href;
++}
+diff --git a/src/utils/DirectAvatarPreview.ts b/src/utils/DirectAvatarPreview.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..06283a7f3ab2cc4cad795490c717284aba7151dd
+--- /dev/null
++++ b/src/utils/DirectAvatarPreview.ts
+@@ -0,0 +1,61 @@
++import { readDirectAvatar } from './DirectAvatar';
++
++const SIZE = 96;
++let cached: { key: string | null; preview: Promise<string | null> } | null = null;
++
++function drawFrame(source: CanvasImageSource, width: number, height: number): string {
++	if (!width || !height) { throw new Error('Empty avatar frame'); }
++	const canvas = document.createElement('canvas');
++	canvas.width = SIZE;
++	canvas.height = SIZE;
++	const context = canvas.getContext('2d');
++	if (!context) { throw new Error('Canvas unavailable'); }
++	const scale = Math.min(SIZE / width, SIZE / height);
++	const scaledWidth = width * scale;
++	const scaledHeight = height * scale;
++	context.drawImage(source, (SIZE - scaledWidth) / 2, (SIZE - scaledHeight) / 2, scaledWidth, scaledHeight);
++	return canvas.toDataURL('image/png');
++}
++
++async function createPreview(): Promise<string | null> {
++	const file = await readDirectAvatar();
++	if (!file) { return null; }
++	if (!/\.(mp4|webm)$/i.test(file.name)) {
++		// ImageBitmap decodes the first frame of an animated image without keeping its animation alive.
++		const bitmap = await createImageBitmap(file);
++		try { return drawFrame(bitmap, bitmap.width, bitmap.height); } finally { bitmap.close(); }
++	}
++
++	const uri = URL.createObjectURL(file);
++	const video = document.createElement('video');
++	video.preload = 'auto';
++	video.muted = true;
++	video.playsInline = true;
++	let timeout: ReturnType<typeof setTimeout> | undefined;
++	try {
++		return await new Promise<string>((resolve, reject) => {
++			video.onloadeddata = () => {
++				try { resolve(drawFrame(video, video.videoWidth, video.videoHeight)); } catch (error) { reject(error); }
++			};
++			video.onerror = () => reject(new Error('Cannot decode avatar preview'));
++			timeout = setTimeout(() => reject(new Error('Avatar preview timed out')), 8000);
++			video.src = uri;
++		});
++	} finally {
++		clearTimeout(timeout);
++		video.onloadeddata = null;
++		video.onerror = null;
++		video.pause();
++		video.removeAttribute('src');
++		video.load();
++		URL.revokeObjectURL(uri);
++	}
++}
++
++/** Cache one tiny still per selected avatar; menu/room rerenders must not keep a second video decoder running. */
++export function getDirectAvatarPreview(key: string | null): Promise<string | null> {
++	if (!cached || cached.key !== key) {
++		cached = { key, preview: createPreview().catch(() => null) };
++	}
++	return cached.preview;
++}
+diff --git a/src/utils/DirectConnection.ts b/src/utils/DirectConnection.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f47e106ebf7bb75f01903c4a81df120d7fdf922
+--- /dev/null
++++ b/src/utils/DirectConnection.ts
+@@ -0,0 +1,85 @@
++import Config from '../Config';
++
++/** Endpoint selected explicitly before the game starts any network activity. */
++export interface DirectSession {
++	uri: string;
++	isHost: boolean;
++	addresses: string[];
++}
++
++let session: DirectSession | null = null;
++
++export function getDirectSession(): DirectSession | null {
++	return session;
++}
++
++export function setDirectSession(value: DirectSession | null): void {
++	session = value;
++}
++
++export function parseDirectPort(value: string): number {
++	if (!/^\d{1,5}$/.test(value.trim())) {
++		throw new Error('Введите порт от 1 до 65535.');
++	}
++
++	const port = Number(value);
++	if (port < 1 || port > 65535) {
++		throw new Error('Введите порт от 1 до 65535.');
++	}
++
++	return port;
++}
++
++/** Accepts only an IP address or DNS hostname, never credentials, paths or a URL. */
++export function createDirectUri(host: string, portValue: string): string {
++	const port = parseDirectPort(portValue);
++	const value = host.trim();
++	const ipv6 = value.startsWith('[') && value.endsWith(']');
++	if (!value || /[\s/@?#\\]/.test(value) || (!ipv6 && value.includes(':'))) {
++		throw new Error('Введите IP-адрес или имя хоста без http:// и номера порта.');
++	}
++	if (!ipv6 && !/^[a-zA-Z0-9.-]+$/.test(value)) {
++		throw new Error('Некорректный адрес хоста.');
++	}
++
++	try {
++		const uri = new URL(`http://${value}:${port}`);
++		if (!uri.hostname || uri.username || uri.password || uri.pathname !== '/') {
++			throw new Error('Некорректный адрес хоста.');
++		}
++		return uri.origin;
++	} catch {
++		throw new Error('Некорректный адрес хоста.');
++	}
++}
++
++export function directConfig(config: Config, uri: string): Config {
++	return {
++		...config,
++		directMode: true,
++		serverUri: uri,
++		serverDiscoveryUri: undefined,
++		siStatisticsServiceUri: '',
++		appRegistryServiceUri: '',
++		registerServiceWorker: false,
++		askForConsent: false,
++		rewriteUrl: false,
++		ads: '',
++	};
++}
++
++/** Keep optional client integrations from contacting any service outside the selected host. */
++export function restrictDirectFetch(uri: string): void {
++	const fetch = globalThis.fetch.bind(globalThis);
++	const allowedOrigin = new URL(uri).origin;
++	globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
++		const raw = input instanceof Request ? input.url : String(input);
++		const url = new URL(raw, window.location.href);
++		const nativeEndpoint = !!window.__TAURI__ && (url.origin === 'http://ipc.localhost' ||
++			(url.origin === 'http://sigame.localhost' && url.pathname === '/file'));
++		if (url.protocol.startsWith('http') && url.origin !== allowedOrigin && url.origin !== window.location.origin && !nativeEndpoint) {
++			return Promise.reject(new Error('В прямом режиме доступны только файлы и сервер выбранного хоста.'));
++		}
++		return fetch(input, { ...init, redirect: 'error' });
++	};
++}
+diff --git a/src/utils/DirectLauncher.ts b/src/utils/DirectLauncher.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..8f46ea62c10e845ede945bfd7e8c8ac0e9674c86
+--- /dev/null
++++ b/src/utils/DirectLauncher.ts
+@@ -0,0 +1,44 @@
++import * as React from 'react';
++import { INavigationState } from '../state/uiSlice';
++import { DirectSession, getDirectSession, setDirectSession } from './DirectConnection';
++
++const launchKey = 'SIGame.DirectIP.launch';
++let leavingSession: Promise<void> | null = null;
++
++type Launch = { session: DirectSession } | { navigation: INavigationState };
++
++export const DirectLauncherContext = React.createContext({ enabled: false, menuOnly: false });
++
++/** Reload once to initialize the chosen host and network clients from a clean state. */
++export function launchGame(launch: Launch): void {
++	sessionStorage.setItem(launchKey, JSON.stringify(launch));
++	window.history.replaceState(null, '', window.location.href);
++	window.location.reload();
++}
++
++export function takeLaunch(): Launch | null {
++	const saved = sessionStorage.getItem(launchKey);
++	sessionStorage.removeItem(launchKey);
++	if (!saved) { return null; }
++	try { return JSON.parse(saved) as Launch; } catch { return null; }
++}
++
++/** Stop our own server before reloading the normal menu; repeated clicks share the same exit. */
++export function leaveDirectSession(): Promise<void> {
++	if (leavingSession) { return leavingSession; }
++	leavingSession = (async () => {
++		if (getDirectSession()?.isHost) {
++			const core = window.__TAURI__?.core;
++			if (!core) { throw new Error('Не удалось связаться с локальным хостом.'); }
++			await core.invoke('stop_direct_host', {});
++		}
++		setDirectSession(null);
++		sessionStorage.removeItem(launchKey);
++		window.history.replaceState(null, '', window.location.pathname);
++		window.location.reload();
++	})().catch(error => {
++		leavingSession = null;
++		throw error;
++	});
++	return leavingSession;
++}
+diff --git a/src/utils/DirectLibraries.ts b/src/utils/DirectLibraries.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..e22694a5e3a6a2ba31d3861cc517a3225319bac7
+--- /dev/null
++++ b/src/utils/DirectLibraries.ts
+@@ -0,0 +1,40 @@
++import SIStorageInfo from '../client/contracts/SIStorageInfo';
++import PackageInfo from '../client/contracts/PackageInfo';
++import { PackageData } from '../state/gameSlice';
++import PackageType from '../model/enums/PackageType';
++
++/** Catalogue requests go through the local host; the normal direct network boundary stays closed. */
++export function directLibraryStorages(serverUri: string, russian: boolean): SIStorageInfo[] {
++	return [{
++		id: 'default', serviceUri: `${serverUri}/direct/libraries/default`,
++		name: russian ? 'Библиотека вопросов' : 'Question library',
++		randomPackagesSupported: true, identifiersSupported: true, maximumPageSize: 20,
++		uri: 'https://vladimirkhil.com/sistorage', packageProperties: ['logo'],
++		facets: ['languages', 'authors', 'tags', 'publishers', 'restrictions'],
++	}, {
++		id: 'sibrowser', serviceUri: `${serverUri}/direct/libraries/sibrowser`,
++		name: russian ? 'Библиотека вопросов SI BROWSER' : 'SI BROWSER question library',
++		randomPackagesSupported: false, identifiersSupported: false, maximumPageSize: 10,
++		uri: 'https://www.sibrowser.ru', packageProperties: ['logoUri'], facets: ['tags', 'tags2'],
++	}];
++}
++
++/** Send a catalogue identifier, never an arbitrary download URL, to the host. */
++export function directLibrarySelection(pack: PackageData, language: string): { library: string; id?: string; language?: string } {
++	if (pack.type === PackageType.Random) return { library: 'random', language };
++	const match = /^direct-library:(default|sibrowser)\/([a-zA-Z0-9-]+)$/.exec(pack.uri ?? '');
++	if (!match) throw new Error('Выберите пакет из библиотеки ещё раз.');
++	return { library: match[1], id: match[2] };
++}
++
++export async function importDirectLibraryPackage(serverUri: string, pack: PackageData, language: string): Promise<PackageInfo> {
++	const response = await fetch(`${serverUri}/direct/library-package`, {
++		method: 'POST', headers: { 'Content-Type': 'application/json' },
++		body: JSON.stringify(directLibrarySelection(pack, language)),
++	});
++	if (!response.ok) {
++		const error = await response.json();
++		throw new Error(error.detail ?? error.error ?? 'Не удалось загрузить пакет из библиотеки.');
++	}
++	return await response.json() as PackageInfo;
++}
+diff --git a/src/utils/DirectPressClock.ts b/src/utils/DirectPressClock.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..0e4618101e380ee8c90b600f5cf22ffbf508b0c7
+--- /dev/null
++++ b/src/utils/DirectPressClock.ts
+@@ -0,0 +1,61 @@
++import Message from '../client/contracts/Message';
++
++/** Measures the first local press with a monotonic clock, independently of network travel time. */
++export default class DirectPressClock {
++	private startedAt: number | null = null;
++	private attemptId: number | null = null;
++	private pausedAt: number | null = null;
++	private questionActive = false;
++	private earlyPressedAt: number | null = null;
++	private hasPressed = false;
++
++	reset(): void {
++		this.startedAt = null;
++		this.attemptId = null;
++		this.pausedAt = null;
++		this.questionActive = false;
++		this.earlyPressedAt = null;
++		this.hasPressed = false;
++	}
++
++	observe(message: Message, now = performance.now()): { DirectAttemptId: number; DirectReactionMs: number } | null {
++		if (!message.IsSystem || message.Sender !== '@') { return null; }
++		const [command, arg] = message.Text.split('\n', 2);
++		if (command === 'TRY' && Number.isSafeInteger(message.DirectAttemptId)) {
++			this.startedAt = now;
++			this.attemptId = message.DirectAttemptId!;
++			this.pausedAt = null;
++			this.questionActive = true;
++			this.hasPressed = false;
++			if (this.earlyPressedAt !== null) {
++				const duration = Math.min(-1, Math.round(this.earlyPressedAt - now));
++				this.earlyPressedAt = null;
++				this.hasPressed = true;
++				return { DirectAttemptId: this.attemptId, DirectReactionMs: duration };
++			}
++		} else if (['ENDTRY', 'CHOICE', 'QUESTION', 'QUESTION_END', 'STAGE'].includes(command)) {
++			this.reset();
++			this.questionActive = command === 'CHOICE' || command === 'QUESTION';
++		} else if (command === 'PAUSE' && this.questionActive) {
++			if (arg === '+' && this.pausedAt === null) { this.pausedAt = now; }
++			if (arg === '-' && this.pausedAt !== null) {
++				if (this.startedAt !== null) { this.startedAt += now - this.pausedAt; }
++				if (this.earlyPressedAt !== null) { this.earlyPressedAt += now - this.pausedAt; }
++				this.pausedAt = null;
++			}
++		}
++		return null;
++	}
++
++	capture(now = performance.now()): { DirectAttemptId: number; DirectReactionMs: number } | { DirectEarlyPress: true } | null {
++		if (this.pausedAt !== null || this.hasPressed) { return null; }
++		if (this.startedAt === null || this.attemptId === null) {
++			if (!this.questionActive || this.earlyPressedAt !== null) { return null; }
++			this.earlyPressedAt = now;
++			return { DirectEarlyPress: true };
++		}
++		const result = { DirectAttemptId: this.attemptId, DirectReactionMs: Math.max(0, Math.round(now - this.startedAt)) };
++		this.hasPressed = true;
++		return result;
++	}
++}
+diff --git a/src/utils/Navigator.ts b/src/utils/Navigator.ts
+index d2fb3de2f3267b7194ce632901385f02c8790316..37fbcd4ff749d8467a245e520ea33d9db2395aeb 100644
+--- a/src/utils/Navigator.ts
++++ b/src/utils/Navigator.ts
+@@ -23,6 +23,8 @@ import { logEvent } from 'firebase/analytics';
+ import stringFormat from './StringHelpers';
+ import Sex from '../client/models/enums/Sex';
+ import { getGameLink } from './inviteLink';
++import { getDirectSession } from './DirectConnection';
++import { leaveDirectSession } from './DirectLauncher';
+ 
+ let isInitialized = false;
+ 
+@@ -142,8 +144,18 @@ export const navigate = createAsyncThunk(
+ 		let nav: INavigationState;
+ 		const previousPath = state.ui.navigation.path;
+ 
++		// A desktop direct session ends at the real main menu, never at a second host-only menu.
++		if (navigation.path === Path.Menu && getDirectSession() && window.__TAURI__) {
++			try {
++				await leaveDirectSession();
++			} catch (error) {
++				thunkAPI.dispatch(userErrorChanged(getErrorMessage(error)));
++			}
++			return;
++		}
++
+ 		if (navigation.path === Path.Room) {
+-			nav = { ...navigation, returnToLobby: previousPath === Path.Lobby };
++			nav = { ...navigation, returnToLobby: previousPath === Path.Lobby || !!(thunkAPI.extra as DataContext).config.directMode };
+ 		} else {
+ 			nav = navigation;
+ 		}
+@@ -189,7 +201,9 @@ export const navigate = createAsyncThunk(
+ 				);
+ 
+ 				if (!connectionResult) {
+-					thunkAPI.dispatch(userErrorChanged(`${localization.failedToFetch}. ${localization.useProxyOnErrors}`));
++					thunkAPI.dispatch(userErrorChanged((thunkAPI.extra as DataContext).config.directMode
++						? 'Не удалось подключиться к хосту. Проверьте IP-адрес, порт и запуск хоста.'
++						: `${localization.failedToFetch}. ${localization.useProxyOnErrors}`));
+ 					return;
+ 				}
+ 
+diff --git a/src/utils/SIHostListener.ts b/src/utils/SIHostListener.ts
+index d9cba5a521d33b69f2b32fd97fd89e8a962db9e0..a148cc621ef194e41bda1ded87f9b136b6235e5b 100644
+--- a/src/utils/SIHostListener.ts
++++ b/src/utils/SIHostListener.ts
+@@ -12,6 +12,8 @@ import { isSIHostConnectedChanged, userErrorChanged } from '../state/commonSlice
+ import { initRoom } from '../state/serverActions';
+ import { ReconnectError } from '../client/SIHostClient';
+ import { getJoinErrorMessage } from './GameErrorsHelper';
++import DirectPlayerMetrics from '../client/contracts/DirectPlayerMetrics';
++import { setDirectMetrics } from '../state/room2Slice';
+ 
+ export default class SIHostListener implements ISIHostListener {
+ 	messageProcessor: MessageProcessor;
+@@ -27,6 +29,10 @@ export default class SIHostListener implements ISIHostListener {
+ 		this.messageProcessor.processMessage(message);
+ 	}
+ 
++	onDirectMetrics(players: DirectPlayerMetrics[]): void {
++		this.appDispatch(setDirectMetrics(players));
++	}
++
+ 	onDisconnect(): void {
+ 		this.appDispatch(setKicked(true));
+ 	}
+@@ -71,4 +77,4 @@ export default class SIHostListener implements ISIHostListener {
+ 		this.appDispatch(userErrorChanged(`${localization.connectionClosed} ${error?.message || ''}`));
+ 		console.log('Connection close error: ' + getErrorMessage(error));
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/tauri/src-tauri/Cargo.lock b/tauri/src-tauri/Cargo.lock
+index 38af9789585af20bb5c50bc1ce61810781bd25c4..b4f5aa4acaff68bca4c2da8d5b469ad24eaabcb9 100644
+--- a/tauri/src-tauri/Cargo.lock
++++ b/tauri/src-tauri/Cargo.lock
+@@ -96,9 +96,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "anyhow"
+-version = "1.0.100"
++version = "1.0.104"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
++checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
+ 
+ [[package]]
+ name = "arboard"
+@@ -116,7 +116,7 @@ dependencies = [
+  "objc2-foundation 0.3.2",
+  "parking_lot",
+  "percent-encoding",
+- "windows-sys 0.60.2",
++ "windows-sys 0.52.0",
+  "wl-clipboard-rs",
+  "x11rb",
+ ]
+@@ -136,7 +136,7 @@ dependencies = [
+  "enumflags2",
+  "futures-channel",
+  "futures-util",
+- "rand 0.9.2",
++ "rand 0.9.5",
+  "raw-window-handle",
+  "serde",
+  "serde_repr",
+@@ -630,9 +630,9 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
+ 
+ [[package]]
+ name = "chacha20"
+-version = "0.10.1"
++version = "0.10.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d524456ba66e72eb8b115ff89e01e497f8e6d11d78b70b1aa13c0fbd97540a81"
++checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
+ dependencies = [
+  "cfg-if",
+  "cpufeatures 0.3.0",
+@@ -653,9 +653,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "clipboard-win"
+-version = "5.4.1"
++version = "5.4.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bde03770d3df201d4fb868f2c9c59e66a3e4e2bd06692a0fe701e7103c7e84d4"
++checksum = "052af7878466feccda12ba7a6a67d019d712f296809559b47c12c8cc196d3a9a"
+ dependencies = [
+  "error-code",
+ ]
+@@ -1155,7 +1155,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -1166,11 +1166,10 @@ checksum = "dea2df4cf52843e0452895c455a1a2cfbb842a1e7329671acf418fdc53ed4c59"
+ 
+ [[package]]
+ name = "event-listener"
+-version = "5.4.1"
++version = "5.4.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e13b66accf52311f30a0db42147dadea9850cb48cd070028831ae5f5d4b856ab"
++checksum = "5a23add41df1562121a9393cb065eab5146a1242410f23a644851e90cfd669d2"
+ dependencies = [
+- "concurrent-queue",
+  "parking",
+  "pin-project-lite",
+ ]
+@@ -1764,9 +1763,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "h2"
+-version = "0.4.12"
++version = "0.4.20"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f3c0b69cfcb4e1b9f1bf2f53f95f766e4661169728ec61cd3fe5a0166f2d1386"
++checksum = "7d29020232d6aa3fb1daca64c1127cf662cf97f254ae16c18c05b8ab635fc118"
+ dependencies = [
+  "atomic-waker",
+  "bytes",
+@@ -3016,7 +3015,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.2",
++ "windows-sys 0.45.0",
+ ]
+ 
+ [[package]]
+@@ -3168,7 +3167,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5d5285893bb5eb82e6aaf5d59ee909a06a16737a8970984dd7746ba9283498d6"
+ dependencies = [
+  "phf_shared 0.10.0",
+- "rand 0.8.5",
++ "rand 0.8.8",
+ ]
+ 
+ [[package]]
+@@ -3178,7 +3177,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3c80231409c20246a13fddb31776fb942c38553c51e871f8cbd687a4cfb5843d"
+ dependencies = [
+  "phf_shared 0.11.3",
+- "rand 0.8.5",
++ "rand 0.8.8",
+ ]
+ 
+ [[package]]
+@@ -3506,9 +3505,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "quinn-proto"
+-version = "0.11.16"
++version = "0.11.19"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2f4bfc015262b9df63c8845072ce59068853ff5872180c2ce2f13038b970e560"
++checksum = "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe"
+ dependencies = [
+  "bytes",
+  "getrandom 0.4.3",
+@@ -3528,16 +3527,16 @@ dependencies = [
+ 
+ [[package]]
+ name = "quinn-udp"
+-version = "0.5.14"
++version = "0.5.16"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "addec6a0dcad8a8d96a771f815f0eaf55f9d1805756410b39f5fa81332574cbd"
++checksum = "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016"
+ dependencies = [
+  "cfg_aliases",
+  "libc",
+  "once_cell",
+  "socket2",
+  "tracing",
+- "windows-sys 0.60.2",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -3583,9 +3582,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rand"
+-version = "0.8.5"
++version = "0.8.8"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
++checksum = "e058c7de0b26af77780c769414d6257830bb240f3c38477dbc2c16e5f54d6d4c"
+ dependencies = [
+  "libc",
+  "rand_chacha 0.3.1",
+@@ -3594,9 +3593,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rand"
+-version = "0.9.2"
++version = "0.9.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6db2770f06117d490610c7488547d543617b21bfa07796d7a12f6f1bd53850d1"
++checksum = "b9ef1d0d795eb7d84685bca4f72f3649f064e6641543d3a8c415898726a57b41"
+ dependencies = [
+  "rand_chacha 0.9.0",
+  "rand_core 0.9.3",
+@@ -3878,9 +3877,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rkyv"
+-version = "0.7.45"
++version = "0.7.46"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9008cd6385b9e161d8229e1f6549dd23c3d022f132a2ea37ac3a10ac4935779b"
++checksum = "2297bf9c81a3f0dc96bc9521370b88f054168c29826a75e89c55ff196e7ed6a1"
+ dependencies = [
+  "bitvec",
+  "bytecheck",
+@@ -3896,9 +3895,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rkyv_derive"
+-version = "0.7.45"
++version = "0.7.46"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "503d1d27590a2b0a3a4ca4c94755aa2875657196ecbf401a42eff41d7de532c0"
++checksum = "84d7b42d4b8d06048d3ac8db0eb31bcb942cbeb709f0b5f2b2ebde398d3038f5"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+@@ -3915,7 +3914,7 @@ dependencies = [
+  "borsh",
+  "bytes",
+  "num-traits",
+- "rand 0.8.5",
++ "rand 0.8.8",
+  "rkyv",
+  "serde",
+  "serde_json",
+@@ -3946,7 +3945,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys 0.4.15",
+- "windows-sys 0.59.0",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -3959,7 +3958,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys 0.11.0",
+- "windows-sys 0.61.2",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -3988,9 +3987,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rustls-webpki"
+-version = "0.103.15"
++version = "0.103.17"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2"
++checksum = "e3a0760a887c14823fca5a1c970b01d47c328c696c0c64829d1df50e8f853fd5"
+ dependencies = [
+  "ring",
+  "rustls-pki-types",
+@@ -5041,7 +5040,7 @@ dependencies = [
+  "getrandom 0.3.4",
+  "once_cell",
+  "rustix 1.1.2",
+- "windows-sys 0.61.2",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+@@ -5169,9 +5168,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
+ 
+ [[package]]
+ name = "tokio"
+-version = "1.48.0"
++version = "1.50.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ff360e02eab121e0bc37a2d3b4d4dc622e6eda3a8e5253d5435ecf5bd4c68408"
++checksum = "27ad5e34374e03cfffefc301becb44e9dc3c17584f414349ebe29ed26661822d"
+ dependencies = [
+  "bytes",
+  "libc",
+@@ -5402,9 +5401,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "tray-icon"
+-version = "0.21.1"
++version = "0.21.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a0d92153331e7d02ec09137538996a7786fe679c629c279e82a6be762b7e6fe2"
++checksum = "a5e85aa143ceb072062fc4d6356c1b520a51d636e7bc8e77ec94be3608e5e80c"
+ dependencies = [
+  "crossbeam-channel",
+  "dirs",
+@@ -5419,7 +5418,7 @@ dependencies = [
+  "png 0.17.16",
+  "serde",
+  "thiserror 2.0.17",
+- "windows-sys 0.59.0",
++ "windows-sys 0.60.2",
+ ]
+ 
+ [[package]]
+@@ -5890,9 +5889,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "webpki-roots"
+-version = "1.0.3"
++version = "1.0.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "32b130c0d2d49f8b6889abc456e795e82525204f27c42cf767cf0d7734e089b8"
++checksum = "7265c9301c16a8711c992c2d8da90ee77ef54b1ed51482d6dfeb00dc756b1297"
+ dependencies = [
+  "rustls-pki-types",
+ ]
+@@ -5961,7 +5960,7 @@ version = "0.1.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
+ dependencies = [
+- "windows-sys 0.61.2",
++ "windows-sys 0.52.0",
+ ]
+ 
+ [[package]]
+diff --git a/tauri/src-tauri/Cargo.toml b/tauri/src-tauri/Cargo.toml
+index 66fa2f032fea8466f037528bacbf67b84db2e9b9..ff22afaf35f066822e938161a52d54d2dac89e26 100644
+--- a/tauri/src-tauri/Cargo.toml
++++ b/tauri/src-tauri/Cargo.toml
+@@ -8,6 +8,12 @@ repository = "https://github.com/VladimirKhil/SIOnline"
+ edition = "2021"
+ rust-version = "1.90.0"
+ 
++# Keep the normal optimization level; remove duplicate code across crates at link time.
++[profile.release]
++lto = "thin"
++codegen-units = 1
++strip = "debuginfo"
++
+ # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+ 
+ [lib]
+diff --git a/tauri/src-tauri/src/direct_host.rs b/tauri/src-tauri/src/direct_host.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..801e1ee6f46cb9b7e39dcbc8ceb235c1985c918e
+--- /dev/null
++++ b/tauri/src-tauri/src/direct_host.rs
+@@ -0,0 +1,176 @@
++//! Owns the local game server for exactly the lifetime of this application.
++use serde::Serialize;
++use std::{
++    fs::OpenOptions,
++    io::{Read, Write},
++    net::{SocketAddr, TcpStream},
++    process::{Child, Command, Stdio},
++    sync::{Arc, Mutex},
++    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
++};
++use tauri::Manager;
++
++#[derive(Default)]
++pub struct DirectHostState(pub Arc<Mutex<Option<RunningHost>>>);
++
++pub struct RunningHost {
++    child: Child,
++    info: HostInfo,
++    token: String,
++}
++
++impl Drop for RunningHost {
++    fn drop(&mut self) {
++        let address = SocketAddr::from(([127, 0, 0, 1], self.info.port));
++        if let Ok(mut stream) = TcpStream::connect_timeout(&address, Duration::from_millis(200)) {
++            let _ = stream.set_write_timeout(Some(Duration::from_millis(300)));
++            let _ = stream.set_read_timeout(Some(Duration::from_millis(300)));
++            let _ = write!(stream, "POST /direct/stop HTTP/1.0\r\nHost: 127.0.0.1:{}\r\nX-Instance-Token: {}\r\nContent-Length: 0\r\n\r\n", self.info.port, self.token);
++            let mut response = [0u8; 1024];
++            let _ = stream.read(&mut response);
++        }
++        let deadline = Instant::now() + Duration::from_secs(3);
++        while Instant::now() < deadline {
++            if matches!(self.child.try_wait(), Ok(Some(_))) { return; }
++            std::thread::sleep(Duration::from_millis(50));
++        }
++        let _ = self.child.kill();
++        let _ = self.child.wait();
++    }
++}
++
++#[derive(Clone, Serialize)]
++pub struct HostInfo {
++    uri: String,
++    port: u16,
++    addresses: Vec<String>,
++}
++
++fn host_addresses(port: u16, token: &str) -> Option<Vec<String>> {
++    let address = SocketAddr::from(([127, 0, 0, 1], port));
++    let Ok(mut stream) = TcpStream::connect_timeout(&address, Duration::from_millis(200)) else {
++        return None;
++    };
++    let _ = stream.set_read_timeout(Some(Duration::from_millis(300)));
++    let _ = stream.set_write_timeout(Some(Duration::from_millis(300)));
++    if write!(stream, "GET /direct/health HTTP/1.0\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n").is_err() {
++        return None;
++    }
++    let mut response = String::new();
++    // Windows can report a reset after the peer has sent a complete response.
++    // Only a complete, valid JSON document with our instance identity is accepted.
++    let _ = stream.take(8192).read_to_string(&mut response);
++    let Some((headers, body)) = response.split_once("\r\n\r\n") else { return None; };
++    if !headers.starts_with("HTTP/1.1 200") && !headers.starts_with("HTTP/1.0 200") {
++        return None;
++    }
++    let value = serde_json::from_str::<serde_json::Value>(body).ok()?;
++    if value["mode"] != "sigame-direct" || value["instanceToken"] != token { return None; }
++    Some(value["addresses"].as_array().map(|items| items.iter()
++        .filter_map(|item| item.as_str().map(String::from)).collect()).unwrap_or_default())
++}
++
++/// Starts the bundled server without a shell or a visible helper window.
++#[tauri::command]
++pub async fn start_direct_host(
++    app: tauri::AppHandle,
++    state: tauri::State<'_, DirectHostState>,
++    port: u16,
++) -> Result<HostInfo, String> {
++    if port == 0 {
++        return Err("Укажите порт от 1 до 65535".into());
++    }
++    let state = state.0.clone();
++    tauri::async_runtime::spawn_blocking(move || {
++        let mut guard = state.lock().map_err(|_| "Не удалось получить состояние хоста")?;
++        if let Some(host) = guard.as_mut() {
++            if host.child.try_wait().map_err(|e| e.to_string())?.is_none() {
++                return if host.info.port == port {
++                    Ok(host.info.clone())
++                } else {
++                    Err(format!("Хост уже запущен на порту {}. Сначала остановите его.", host.info.port))
++                };
++            }
++        }
++        *guard = None;
++        let executable = std::env::current_exe().map_err(|e| e.to_string())?;
++        let directory = executable.parent().ok_or("Не найдена папка игры")?;
++        let server = directory.join("DirectHost").join("SIGame.DirectHost.exe");
++        if !server.is_file() {
++            return Err("Не найден DirectHost/SIGame.DirectHost.exe. Скопируйте папку DirectHost вместе с игрой.".into());
++        }
++        let data = app.path().app_local_data_dir().map_err(|e| e.to_string())?.join("DirectHost");
++        std::fs::create_dir_all(&data).map_err(|e| e.to_string())?;
++        let log_path = data.join("host.log");
++        let log = OpenOptions::new().create(true).append(true).open(&log_path).map_err(|e| e.to_string())?;
++        let error_log = log.try_clone().map_err(|e| e.to_string())?;
++        let token = format!("{}-{}", std::process::id(), SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos());
++        let mut command = Command::new(server);
++        command.args(["--port", &port.to_string(), "--parent-pid", &std::process::id().to_string(), "--instance-token", &token])
++            .current_dir(&data)
++            .stdin(Stdio::null()).stdout(Stdio::from(log)).stderr(Stdio::from(error_log));
++        #[cfg(windows)]
++        {
++            use std::os::windows::process::CommandExt;
++            command.creation_flags(0x08000000); // CREATE_NO_WINDOW
++        }
++        let child = command.spawn().map_err(|e| format!("Не удалось запустить хост: {e}"))?;
++        let info = HostInfo { uri: format!("http://127.0.0.1:{port}"), port, addresses: Vec::new() };
++        let mut host = RunningHost { child, info: info.clone(), token: token.clone() };
++        let deadline = Instant::now() + Duration::from_secs(30);
++        loop {
++            if let Some(status) = host.child.try_wait().map_err(|e| e.to_string())? {
++                return Err(format!("Хост завершился ({status}). Возможно, порт занят. Журнал: {}", log_path.display()));
++            }
++            if let Some(addresses) = host_addresses(port, &token) {
++                host.info.addresses = addresses;
++                let info = host.info.clone();
++                *guard = Some(host);
++                return Ok(info);
++            }
++            if Instant::now() >= deadline {
++                return Err(format!("Хост не запустился за 30 секунд. Журнал: {}", log_path.display()));
++            }
++            std::thread::sleep(Duration::from_millis(100));
++        }
++    }).await.map_err(|e| e.to_string())?
++}
++
++#[tauri::command]
++pub fn stop_direct_host(state: tauri::State<'_, DirectHostState>) -> Result<(), String> {
++    state.0.lock().map_err(|_| "Не удалось получить состояние хоста")?.take();
++    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::net::TcpListener;
++
++    fn respond(status: &str, body: &str) -> u16 {
++        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
++        let port = listener.local_addr().unwrap().port();
++        let response = format!("HTTP/1.0 {status}\r\nContent-Length: {}\r\n\r\n{body}", body.len());
++        std::thread::spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            let mut request = [0u8; 1024];
++            let _ = stream.read(&mut request);
++            stream.write_all(response.as_bytes()).unwrap();
++        });
++        port
++    }
++
++    #[test]
++    fn readiness_requires_our_server_instance() {
++        let body = r#"{"mode":"sigame-direct","instanceToken":"owned"}"#;
++        assert!(host_addresses(respond("200 OK", body), "owned").is_some());
++        assert!(host_addresses(respond("200 OK", body), "different").is_none());
++        assert!(host_addresses(respond("503 Unavailable", body), "owned").is_none());
++        assert!(host_addresses(respond("200 OK", r#"{"mode":"other","instanceToken":"owned"}"#), "owned").is_none());
++    }
++
++    #[test]
++    fn readiness_rejects_unrelated_http_service() {
++        assert!(host_addresses(respond("200 OK", "<html>another service</html>"), "owned").is_none());
++    }
++}
+diff --git a/tauri/src-tauri/src/lib.rs b/tauri/src-tauri/src/lib.rs
+index 571725f6bc00dbe311f5dcb0a87a39c9c1c8ad46..45e694e00e45e5244446e65e0a9bd7e049843015 100644
+--- a/tauri/src-tauri/src/lib.rs
++++ b/tauri/src-tauri/src/lib.rs
+@@ -1,6 +1,8 @@
+ #[cfg(feature = "steam_client")]
+ mod content_service;
+ mod discord_presence;
++mod direct_host;
++use direct_host::{DirectHostState, start_direct_host, stop_direct_host};
+ 
+ use discord_presence::{DiscordPresence, RichPresence};
+ 
+@@ -641,7 +643,8 @@ pub fn run() {
+         .plugin(tauri_plugin_process::init())
+         .plugin(tauri_plugin_clipboard_manager::init())
+         .plugin(tauri_plugin_opener::init())
+-        .manage(DiscordPresence::start());
++        .manage(DiscordPresence::start())
++        .manage(DirectHostState::default());
+ 
+     #[cfg(feature = "steam_client")]
+     {
+@@ -701,6 +704,8 @@ pub fn run() {
+     {
+         builder = builder.invoke_handler(tauri::generate_handler![
+             greet,
++            start_direct_host,
++            stop_direct_host,
+             open_url_in_steam_overlay,
+             get_workshop_subscribed_items,
+             get_workshop_file_url,
+@@ -716,15 +721,24 @@ pub fn run() {
+     {
+         builder = builder.invoke_handler(tauri::generate_handler![
+             greet,
++            start_direct_host,
++            stop_direct_host,
+             append_text_file,
+             set_rich_presence
+         ]);
+     }
+ 
+-    builder
+-        .run(tauri::generate_context!())
++    let app = builder
++        .build(tauri::generate_context!())
+         .unwrap_or_else(|e| {
+             log::error!("Error while running SIGame: {}", e);
+             std::process::exit(1);
+         });
++    app.run(|app, event| {
++        if let tauri::RunEvent::Exit = event {
++            if let Ok(mut host) = app.state::<DirectHostState>().0.lock() {
++                host.take();
++            }
++        }
++    });
+ }
+diff --git a/test/DirectConnection.test.ts b/test/DirectConnection.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..2d15da6d3000fb1b17a27798b2af8d5fe38b47c8
+--- /dev/null
++++ b/test/DirectConnection.test.ts
+@@ -0,0 +1,86 @@
++import { createDirectUri, directConfig, parseDirectPort, restrictDirectFetch } from '../src/utils/DirectConnection';
++
++describe('direct host endpoints', () => {
++	test.each([
++		['192.168.1.20', '7777', 'http://192.168.1.20:7777'],
++		['127.0.0.1', '80', 'http://127.0.0.1'],
++		[' my-host.local ', '1234', 'http://my-host.local:1234'],
++		['[::1]', '7777', 'http://[::1]:7777'],
++	])('accepts %s and port %s', (host, port, expected) => {
++		expect(createDirectUri(host, port)).toBe(expected);
++	});
++
++	test.each(['', '0', '-1', '65536', '1e3', '7777/anything', '1.2'])('rejects invalid port %s', port => {
++		expect(() => parseDirectPort(port)).toThrow();
++	});
++
++	test.each([
++		'http://example.com', 'user@host', 'host/path', 'host#fragment', 'host?query', 'a\\b', '127.0.0.1:7777', '999.999.999.999'
++	])('rejects non-host input %s', host => {
++		expect(() => createDirectUri(host, '7777')).toThrow();
++	});
++
++	test('removes public service configuration while preserving the original online config', () => {
++		const online = {
++			serverDiscoveryUri: 'https://official/discovery',
++			siStatisticsServiceUri: 'https://official/stats',
++			appRegistryServiceUri: 'https://official/registry',
++			registerServiceWorker: true,
++		};
++		const direct = directConfig(online, 'http://192.168.1.20:7777');
++		expect(direct.serverUri).toBe('http://192.168.1.20:7777');
++		expect(direct.serverDiscoveryUri).toBeUndefined();
++		expect(direct.siStatisticsServiceUri).toBe('');
++		expect(direct.appRegistryServiceUri).toBe('');
++		expect(direct.registerServiceWorker).toBe(false);
++		expect(online.serverDiscoveryUri).toBe('https://official/discovery');
++	});
++});
++
++describe('direct network boundary', () => {
++	const originalFetch = globalThis.fetch;
++	const originalWindow = globalThis.window;
++	let network: jest.Mock;
++	beforeEach(() => {
++		network = jest.fn().mockResolvedValue({ ok: true });
++		globalThis.fetch = network;
++		Object.defineProperty(globalThis, 'window', {
++			value: { location: { href: 'http://tauri.localhost/', origin: 'http://tauri.localhost' } },
++			configurable: true,
++		});
++		restrictDirectFetch('http://192.168.1.20:7777');
++	});
++	afterEach(() => {
++		globalThis.fetch = originalFetch;
++		Object.defineProperty(globalThis, 'window', { value: originalWindow, configurable: true });
++	});
++
++	test('allows the host and local app assets, refusing automatic redirects', async () => {
++		await fetch('http://192.168.1.20:7777/api/v1/info/host');
++		await fetch('/local-asset.png');
++		expect(network).toHaveBeenCalledTimes(2);
++		expect(network.mock.calls[0][1].redirect).toBe('error');
++	});
++
++	test('allows only the native Steam package-file endpoint in Tauri', async () => {
++		window.__TAURI__ = {};
++		await fetch('http://sigame.localhost/file?id=1234');
++		await fetch('http://ipc.localhost/get_workshop_file_url');
++		expect(network).toHaveBeenCalledTimes(2);
++		await expect(fetch('http://sigame.localhost/other')).rejects.toThrow('прямом режиме');
++	});
++
++	test('does not allow the Steam file origin outside the native app', async () => {
++		await expect(fetch('http://sigame.localhost/file?id=1234')).rejects.toThrow('прямом режиме');
++	});
++
++	test.each([
++		'https://vladimirkhil.com/api/si/servers',
++		'https://content.vladimirkhil.com/file',
++		'http://192.168.1.20:7778/another-service',
++		'http://192.168.1.20.attacker.test:7777/file',
++	])('blocks %s before the network is called', async url => {
++		await expect(fetch(url)).rejects.toThrow('прямом режиме');
++		expect(network).not.toHaveBeenCalled();
++	});
++});
+diff --git a/test/DirectLauncher.test.ts b/test/DirectLauncher.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..279281d9744b6cf2b091ea2cbffe8ac1e1a1d2aa
+--- /dev/null
++++ b/test/DirectLauncher.test.ts
+@@ -0,0 +1,68 @@
++describe('leaving a direct session', () => {
++	const originalWindow = globalThis.window;
++	const originalStorage = globalThis.sessionStorage;
++	let invoke: jest.Mock;
++	let reload: jest.Mock;
++	let storage: Map<string, string>;
++	let leaveDirectSession: typeof import('../src/utils/DirectLauncher').leaveDirectSession;
++	let connection: typeof import('../src/utils/DirectConnection');
++
++	beforeEach(() => {
++		jest.resetModules();
++		invoke = jest.fn().mockResolvedValue(undefined);
++		reload = jest.fn();
++		storage = new Map([['SIGame.DirectIP.launch', 'stale launch']]);
++		Object.defineProperty(globalThis, 'sessionStorage', {
++			configurable: true, value: { removeItem: (key: string) => storage.delete(key) },
++		});
++		Object.defineProperty(globalThis, 'window', {
++			configurable: true,
++			value: {
++				__TAURI__: { core: { invoke } },
++				location: { pathname: '/', reload },
++				history: { replaceState: jest.fn() },
++				confirm: jest.fn(() => { throw new Error('Exit must not ask for confirmation'); }),
++			},
++		});
++		({ leaveDirectSession } = require('../src/utils/DirectLauncher'));
++		connection = require('../src/utils/DirectConnection');
++		connection.setDirectSession({ uri: 'http://127.0.0.1:51234', isHost: true, addresses: [] });
++	});
++
++	afterEach(() => {
++		Object.defineProperty(globalThis, 'window', { value: originalWindow, configurable: true });
++		Object.defineProperty(globalThis, 'sessionStorage', { value: originalStorage, configurable: true });
++	});
++
++	test('waits for shutdown and coalesces repeated exit clicks without confirmation', async () => {
++		let stopped!: () => void;
++		invoke.mockReturnValue(new Promise<void>(resolve => { stopped = resolve; }));
++		const first = leaveDirectSession();
++		expect(leaveDirectSession()).toBe(first);
++		expect(invoke).toHaveBeenCalledTimes(1);
++		expect(invoke).toHaveBeenCalledWith('stop_direct_host', {});
++		expect(reload).not.toHaveBeenCalled();
++		stopped();
++		await first;
++		expect(reload).toHaveBeenCalledTimes(1);
++		expect(storage.has('SIGame.DirectIP.launch')).toBe(false);
++		expect(connection.getDirectSession()).toBeNull();
++	});
++
++	test('a guest exits without stopping somebody else\'s host', async () => {
++		connection.setDirectSession({ uri: 'http://192.0.2.1:51234', isHost: false, addresses: [] });
++		await leaveDirectSession();
++		expect(invoke).not.toHaveBeenCalled();
++		expect(reload).toHaveBeenCalledTimes(1);
++	});
++
++	test('a failed shutdown keeps the session and permits a retry', async () => {
++		invoke.mockRejectedValueOnce(new Error('native shutdown failed'));
++		await expect(leaveDirectSession()).rejects.toThrow('native shutdown failed');
++		expect(connection.getDirectSession()?.isHost).toBe(true);
++		expect(reload).not.toHaveBeenCalled();
++		await leaveDirectSession();
++		expect(invoke).toHaveBeenCalledTimes(2);
++		expect(reload).toHaveBeenCalledTimes(1);
++	});
++});
+diff --git a/test/DirectLibraries.test.ts b/test/DirectLibraries.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..db98b224ee233c6813be6541bd686b366be26612
+--- /dev/null
++++ b/test/DirectLibraries.test.ts
+@@ -0,0 +1,38 @@
++import { directLibrarySelection, directLibraryStorages, importDirectLibraryPackage } from '../src/utils/DirectLibraries';
++import PackageType from '../src/model/enums/PackageType';
++import { PackageData } from '../src/state/gameSlice';
++
++const pack = (uri: string | null, type = PackageType.SIStorage): PackageData => ({ type, uri, data: null, name: '', id: null });
++
++test('both catalogues use the selected host and keep their original filter capabilities', () => {
++	const storages = directLibraryStorages('http://127.0.0.1:51234', true);
++	expect(storages.map(s => s.serviceUri)).toEqual([
++		'http://127.0.0.1:51234/direct/libraries/default', 'http://127.0.0.1:51234/direct/libraries/sibrowser',
++	]);
++	expect(storages[0].identifiersSupported).toBe(true);
++	expect(storages[1].identifiersSupported).toBe(false);
++});
++
++test('selection contains only a catalogue identifier or the random language', () => {
++	expect(directLibrarySelection(pack('direct-library:sibrowser/26017'), 'ru-RU')).toEqual({ library: 'sibrowser', id: '26017' });
++	expect(directLibrarySelection(pack(null, PackageType.Random), 'en-US')).toEqual({ library: 'random', language: 'en-US' });
++});
++
++test.each(['https://127.0.0.1/private', 'direct-library:evil/1', 'direct-library:default/../../private'])('rejects arbitrary downloads %s', uri => {
++	expect(() => directLibrarySelection(pack(uri), 'ru-RU')).toThrow();
++});
++
++test('imports to the local host and preserves a useful storage failure message', async () => {
++	const originalFetch = globalThis.fetch;
++	const fetchMock = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ type: 1, uri: 'direct:123' }) });
++	globalThis.fetch = fetchMock;
++	try {
++		expect(await importDirectLibraryPackage('http://127.0.0.1:51234', pack('direct-library:sibrowser/26017'), 'ru-RU'))
++			.toEqual({ type: 1, uri: 'direct:123' });
++		expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:51234/direct/library-package');
++		expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ library: 'sibrowser', id: '26017' });
++		fetchMock.mockResolvedValue({ ok: false, json: async () => ({ detail: 'Пакет удалён из библиотеки.' }) });
++		await expect(importDirectLibraryPackage('http://127.0.0.1:51234', pack(null, PackageType.Random), 'ru-RU'))
++			.rejects.toThrow('Пакет удалён из библиотеки.');
++	} finally { globalThis.fetch = originalFetch; }
++});
+diff --git a/test/DirectLibrarySwitch.test.ts b/test/DirectLibrarySwitch.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..14487fe8c3fa6a908af8272c6cfef896e55aaaa0
+--- /dev/null
++++ b/test/DirectLibrarySwitch.test.ts
+@@ -0,0 +1,25 @@
++import reducer, { receiveLanguages, searchPackages, searchPackagesByValueFilters, setStorageIndex } from '../src/state/siPackagesSlice';
++
++test('switching libraries drops old cards and late responses cannot select a package from the wrong catalogue', () => {
++	let state = reducer(undefined, { type: 'init' });
++	state = reducer(state, searchPackages.pending('old', {}));
++	state = reducer(state, searchPackages.fulfilled({ total: 1, packages: [{ id: 'old-guid' }] }, 'old', {}));
++	state = reducer(state, searchPackages.pending('late', {}));
++	state = reducer(state, receiveLanguages.pending('old-language', undefined));
++	state = reducer(state, receiveLanguages.fulfilled({
++		languages: [{ id: 1, code: 'ru-RU', name: 'Russian' }], currentLanguage: 'ru-RU',
++	}, 'old-language', undefined));
++	state = reducer(state, receiveLanguages.pending('late-language', undefined));
++	state = reducer(state, setStorageIndex(1));
++	expect(state.packages.packages).toEqual([]);
++	expect(state.languageId).toBeUndefined();
++	state = reducer(state, searchPackagesByValueFilters.pending('new', {}));
++	state = reducer(state, searchPackages.fulfilled({ total: 1, packages: [{ id: 'late-guid' }] }, 'late', {}));
++	state = reducer(state, receiveLanguages.fulfilled({
++		languages: [{ id: 1, code: 'ru-RU', name: 'Russian' }], currentLanguage: 'ru-RU',
++	}, 'late-language', undefined));
++	expect(state.packages.packages).toEqual([]);
++	expect(state.languageId).toBeUndefined();
++	state = reducer(state, searchPackagesByValueFilters.fulfilled({ total: 1, packages: [{ id: '26017' }] }, 'new', {}));
++	expect(state.packages.packages.map(p => p.id)).toEqual(['26017']);
++});
+diff --git a/test/DirectPressClock.test.ts b/test/DirectPressClock.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..4a5756ec92e1a676db00494ecb6d501a581635b3
+--- /dev/null
++++ b/test/DirectPressClock.test.ts
+@@ -0,0 +1,68 @@
++import DirectPressClock from '../src/utils/DirectPressClock';
++import roomReducer, { setDirectMetrics } from '../src/state/room2Slice';
++
++const signal = (text: string, attemptId?: number) => ({ IsSystem: true, Sender: '@', Text: text, DirectAttemptId: attemptId });
++
++test('measures only the first press from the current opening, without wall-clock or network delay', () => {
++	const clock = new DirectPressClock();
++	expect(clock.capture(100)).toBeNull();
++	clock.observe(signal('TRY\nNF', 3), 1000);
++	expect(clock.capture(1257.4)).toEqual({ DirectAttemptId: 3, DirectReactionMs: 257 });
++	expect(clock.capture(1500)).toBeNull();
++	clock.observe(signal('TRY', 4), 2000);
++	expect(clock.capture(2200)).toEqual({ DirectAttemptId: 4, DirectReactionMs: 200 });
++});
++
++test.each(['ENDTRY\n0', 'ENDTRY\nA', 'QUESTION_END', 'STAGE\nRound', 'PAUSE\n+'])('does not time presses after %s', text => {
++	const clock = new DirectPressClock();
++	clock.observe(signal('TRY', 3), 10);
++	clock.observe(signal(text), 100);
++	expect(clock.capture(150)).toBeNull();
++});
++
++test('reports an early press as negative only when answering opens', () => {
++	const clock = new DirectPressClock();
++	clock.observe(signal('CHOICE\n0\n0'), 100);
++	expect(clock.capture(400)).toEqual({ DirectEarlyPress: true });
++	expect(clock.capture(450)).toBeNull();
++	expect(clock.observe(signal('TRY', 7), 700)).toEqual({ DirectAttemptId: 7, DirectReactionMs: -300 });
++	expect(clock.capture(800)).toBeNull();
++	clock.observe(signal('CHOICE\n0\n1'), 1000);
++	clock.capture(1100);
++	clock.observe(signal('QUESTION_END'), 1200);
++	expect(clock.observe(signal('TRY', 8), 1300)).toBeNull();
++});
++
++test('excludes paused game time and resumes the same attempt', () => {
++	const clock = new DirectPressClock();
++	clock.observe(signal('TRY', 3), 100);
++	clock.observe(signal('PAUSE\n+'), 200);
++	expect(clock.capture(500)).toBeNull();
++	clock.observe(signal('PAUSE\n-'), 1200);
++	expect(clock.capture(1400)).toEqual({ DirectAttemptId: 3, DirectReactionMs: 300 });
++});
++
++test('ignores chat, other senders and openings without an attempt identifier', () => {
++	const clock = new DirectPressClock();
++	clock.observe({ ...signal('TRY', 2), IsSystem: false }, 0);
++	clock.observe({ ...signal('TRY', 2), Sender: 'other-player' }, 0);
++	clock.observe(signal('TRY'), 0);
++	expect(clock.capture(10)).toBeNull();
++});
++
++test('reset on disconnect prevents a stale attempt being sent after reconnect', () => {
++	const clock = new DirectPressClock();
++	clock.observe(signal('TRY', 8), 100);
++	clock.reset();
++	expect(clock.capture(200)).toBeNull();
++});
++
++test('room snapshots remove disconnected players and do not preserve values for a new connection', () => {
++	let state = roomReducer(undefined, setDirectMetrics([{ Name: 'Player', PingMs: 42, ReactionMs: 257 }]));
++	expect(state.directMetrics?.Player.ReactionMs).toBe(257);
++	state = roomReducer(state, setDirectMetrics([]));
++	expect(state.directMetrics?.Player).toBeUndefined();
++	state = roomReducer(state, setDirectMetrics([{ Name: 'Player', PingMs: null, ReactionMs: null }]));
++	expect(state.directMetrics?.Player.PingMs).toBeNull();
++	expect(state.directMetrics?.Player.ReactionMs).toBeNull();
++});
+diff --git a/test/contentPreloader.test.ts b/test/contentPreloader.test.ts
+index 1a933dafc01a1ec73caf381ed2ae349b60f538a5..38b3a07eea3336c97e45f03b9dc2d76e2e0545f2 100644
+--- a/test/contentPreloader.test.ts
++++ b/test/contentPreloader.test.ts
+@@ -1,4 +1,7 @@
+ import { preloadRoundContent } from '../src/logic/contentPreloader';
++import { getDirectSession } from '../src/utils/DirectConnection';
++
++jest.mock('../src/utils/DirectConnection', () => ({ getDirectSession: jest.fn(() => null) }));
+ 
+ describe('contentPreloader', () => {
+ 	jest.setTimeout(15000);
+@@ -24,10 +27,30 @@ describe('contentPreloader', () => {
+ 	});
+ 
+ 	afterEach(() => {
++		(getDirectSession as jest.Mock).mockReturnValue(null);
+ 		jest.useRealTimers();
+ 		jest.restoreAllMocks();
+ 	});
+ 
++	test.each([true, false])('keeps sequential preload but skips inter-file delay only in direct mode: %s', async direct => {
++		(getDirectSession as jest.Mock).mockReturnValue(direct ? { mode: 'host' } : null);
++		global.fetch = jest.fn(async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) } as Response));
++		let finished = false;
++		const task = preloadRoundContent(['http://host/one.mp3', 'http://host/two.mp3'], uri => uri, () => false,
++			jest.fn() as never, jest.fn()).then(() => { finished = true; });
++		for (let i = 0; i < 30; i += 1) { await flushMicrotasks(); }
++		expect(global.fetch).toHaveBeenCalledTimes(direct ? 2 : 1);
++		expect(finished).toBe(direct);
++		if (!direct) {
++			jest.advanceTimersByTime(499);
++			await flushMicrotasks();
++			expect(global.fetch).toHaveBeenCalledTimes(1);
++			jest.advanceTimersByTime(1);
++		}
++		await task;
++		expect(global.fetch).toHaveBeenCalledTimes(2);
++	});
++
+ 	test('times out a hanging audio preload and continues with the next queued file', async () => {
+ 		const appDispatch = jest.fn();
+ 		const addSimpleMessage = jest.fn();
+diff --git a/webpack.config.js b/webpack.config.js
+index 3a31ab7ed6fdcec7073feae21c991401e8943327..3f6bcb9cc7709ea66d384c21fa489d24b6df738c 100644
+--- a/webpack.config.js
++++ b/webpack.config.js
+@@ -32,7 +32,9 @@ const getTauriAppVersion = () => {
+ 
+ module.exports = (env, argv) => {
+ 	const isSteamBuild = env.isSteam === 'true' || env.isSteam === true;
+-	const appVersion = env.appVersion || (isSteamBuild ? getTauriAppVersion() : undefined) || 'dev';
++	const isDirectWeb = env.isDirectWeb === 'true' || env.isDirectWeb === true;
++	const appVersion = env.appVersion || (isSteamBuild || isDirectWeb ? getTauriAppVersion() : undefined) || 'dev';
++	const modVersion = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../mod-version.json'), 'utf8')).version;
+ 
+ 	return {
+ 		entry: env.type === 'library-table' ? {
+@@ -42,7 +44,7 @@ module.exports = (env, argv) => {
+ 		} : env.type === 'library-quest' ? {
+ 			main: './src/LibraryQuestion.tsx',
+ 		} : {
+-			config: './assets/config.js',
++			config: isDirectWeb ? './assets/direct-web-config.js' : './assets/config.js',
+ 			main: './src/Index.tsx',
+ 		},
+ 		devtool: argv.mode === 'development' ? 'inline-source-map' : undefined,
+@@ -112,7 +114,7 @@ module.exports = (env, argv) => {
+ 				return pathData.chunk.name === 'config' || argv.mode === 'development' || env.type && env.type.startsWith('library') ? '[name].js': '[name].[contenthash].js';
+ 			},
+ 			chunkFilename: '[name].[contenthash].js',
+-			path: path.resolve(__dirname, 'dist'),
++			path: path.resolve(__dirname, isDirectWeb ? 'dist-web' : 'dist'),
+ 			publicPath: '',
+ 			crossOriginLoading: 'anonymous',
+ 			library: env.type && env.type.startsWith('library') ? 'sigame' : undefined,
+@@ -133,15 +135,16 @@ module.exports = (env, argv) => {
+ 		plugins: [
+ 			new webpack.DefinePlugin({
+ 				'IS_STEAM_BUILD': JSON.stringify(isSteamBuild),
+-				'APP_VERSION': JSON.stringify(appVersion)
++				'APP_VERSION': JSON.stringify(appVersion),
++				'MOD_VERSION': JSON.stringify(modVersion)
+ 			}),
+ 			new CleanWebpackPlugin(),
+ 			new HtmlWebPackPlugin({
+-				template: "./src/index-template.html",
++				template: isDirectWeb ? './src/direct-web-template.html' : './src/index-template.html',
+ 				filename: "./index.html",
+ 				favicon: './assets/images/favicon.ico'
+ 			})].concat(
+-				argv.mode === 'production' && (!env.type || !env.type.startsWith('library'))
++				argv.mode === 'production' && !isDirectWeb && (!env.type || !env.type.startsWith('library'))
+ 					?  [new WorkboxPlugin.GenerateSW({
+ 							// these options encourage the ServiceWorkers to get in there fast
+ 							// and not allow any straggling "old" SWs to hang around
