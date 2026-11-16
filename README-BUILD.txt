@@ -26,7 +26,7 @@ powershell -NoProfile -File .\build-from-source.ps1 -PrepareOnly
 Существующие каталоги не перезаписываются. Для повторной сборки укажите
 новые -WorkDirectory .build-2 -OutputDirectory publish-2 либо удалите
 свои предыдущие каталоги сборки. Другой SDK: -Dotnet "C:\путь\dotnet.exe".
-После -PrepareOnly исходники можно редактировать и собирать в .build:
+После -PrepareOnly исходники можно редактировать и собирать для разработки в .build:
 SIOnline — npm ci, npm run build-steam, npm run build-direct-web;
 SIOnline/tauri — npm ci, npm run tauri build -- --features steam_client --no-bundle;
 DirectHost — dotnet publish -c Release -r win-x64 --self-contained true.
@@ -46,3 +46,8 @@ https://github.com/toolewdpersona/SIGame-Direct-IP/releases/tag/v1.0.8
 Авторство и условия: DirectIP-Docs/LICENSES.txt и DirectIP-Docs/NOTICE.txt.
 Полнота соответствующих исходников всех сторонних компонентов не подтверждена;
 сохранившиеся вопросы перечислены в NOTICE.txt.
+
+Релиз собирайте через build-from-source.ps1: скрипт заменяет пути исходников
+и профиля сборщика нейтральными путями /_/src и /_/user внутри EXE.
+Для .NET задан PathMap; Release не содержит отладочных символов и PDB-путей.
+Пути для загрузки игры и файлов во время работы не изменяются.

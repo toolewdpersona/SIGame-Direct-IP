@@ -85,6 +85,33 @@ if ($PrepareOnly) {
     return
 }
 
+function Build-NativeClient([string]$BuildRoot) {
+    # Cargo's encoded flags preserve spaces in Windows paths. Restore the caller's
+    # environment afterwards; these flags affect compilation, not runtime paths.
+    $previousFlags = $env:CARGO_ENCODED_RUSTFLAGS
+    $flags = @()
+    if ($previousFlags) { $flags += $previousFlags.Split([char]31) }
+    elseif ($env:RUSTFLAGS) { $flags += $env:RUSTFLAGS -split '\s+' | Where-Object { $_ } }
+    $mappings = @(
+        @($env:USERPROFILE, '/_/user'),
+        @($env:CARGO_HOME, '/_/cargo'),
+        @($env:RUSTUP_HOME, '/_/rustup'),
+        @($BuildRoot, '/_/src')
+    )
+    foreach ($mapping in $mappings) {
+        if ($mapping[0]) {
+            $path = [IO.Path]::GetFullPath($mapping[0]).TrimEnd('\', '/')
+            foreach ($variant in @($path, $path.Replace('\', '/')) | Select-Object -Unique) {
+                $flags += '--remap-path-prefix=' + $variant + '=' + $mapping[1]
+            }
+        }
+    }
+    $env:CARGO_ENCODED_RUSTFLAGS = $flags -join [char]31
+    try {
+        Run-Checked 'npm.cmd' @('run','tauri','build','--','--features','steam_client','--no-bundle')
+    } finally { $env:CARGO_ENCODED_RUSTFLAGS = $previousFlags }
+}
+
 Push-Location (Join-Path $workPath 'SIOnline')
 try {
     Run-Checked 'npm.cmd' @('ci')
@@ -94,10 +121,10 @@ try {
 Push-Location (Join-Path $workPath 'SIOnline/tauri')
 try {
     Run-Checked 'npm.cmd' @('ci')
-    Run-Checked 'npm.cmd' @('run','tauri','build','--','--features','steam_client','--no-bundle')
+    Build-NativeClient $workPath
 } finally { Pop-Location }
 New-Item -ItemType Directory -Path $outputPath | Out-Null
-Run-Checked $Dotnet @('publish',(Join-Path $workPath 'DirectHost/SIGame.DirectHost.csproj'),'-c','Release','-r','win-x64','--self-contained','true','-o',(Join-Path $outputPath 'DirectHost'))
+Run-Checked $Dotnet @('publish',(Join-Path $workPath 'DirectHost/SIGame.DirectHost.csproj'),'-c','Release','-r','win-x64','--self-contained','true',('-p:PathMap=' + $workPath + '=/_/src'),'-o',(Join-Path $outputPath 'DirectHost'))
 Copy-Item -LiteralPath (Join-Path $workPath 'SIOnline/tauri/src-tauri/target/release/SIGame.exe') -Destination $outputPath
 foreach ($name in @('README-RU.txt')) {
     Copy-Item -LiteralPath (Join-Path $sourceRoot $name) -Destination $outputPath

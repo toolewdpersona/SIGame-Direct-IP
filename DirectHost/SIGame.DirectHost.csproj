@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>SIGame.DirectHost</AssemblyName>
     <PublishTrimmed>true</PublishTrimmed>
+    <!-- Remove embedded/separate symbols and their build-machine paths from releases. -->
+    <TrimmerRemoveSymbols Condition="'$(Configuration)' == 'Release' and '$(IncludeHostDiagnostics)' != 'true'">true</TrimmerRemoveSymbols>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <PublishDocumentationFiles>false</PublishDocumentationFiles>
     <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
